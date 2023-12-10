@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  nginx:
+    image: "nginx:1.25.3-alpine"
+    ports:
+      - "8000:80"
+    container_name: ${APP_NAME}_nginx
+    volumes:
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./:/var/www/html
+    depends_on:
+      - php
+      - mariadb
+      - phpmyadmin
+
+  php:
+    build:
+      context: ./docker/php
+    user: 1000:1000
+    container_name: ${APP_NAME}_php
+    volumes:
+      - ./:/var/www/html
+      - ./docker/php/increase-memory-limit.ini:/usr/local/etc/php/conf.d/increase-memory-limit.ini
+    depends_on:
+      - mariadb
+
+  mariadb:
+    image: mariadb:11.1.2
+    user: 1000:1000
+    container_name: ${APP_NAME}_db
+    restart: unless-stopped
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./_docker/mariadb:/var/lib/mysql
+    environment:
+      - MARIADB_RANDOM_ROOT_PASSWORD=1
+      - MARIADB_USER=${DB_USERNAME}
+      - MARIADB_PASSWORD=${DB_PASSWORD}
+      - MARIADB_DATABASE=${DB_DATABASE}
+
+  phpmyadmin:
+    image: phpmyadmin:5
+    restart: always
+    environment:
+      - PMA_HOST=mariadb
+    ports:
+      - 8080:80
+    depends_on:
+      - mariadb
+
+  node:
+    image: node:21-alpine
+    user: 1000:1000
+    container_name: ${APP_NAME}_npm
+    volumes:
+      - ./:/var/www/html
+    working_dir: /var/www/html
+    entrypoint: npm
