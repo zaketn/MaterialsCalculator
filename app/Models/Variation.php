@@ -13,7 +13,7 @@ class Variation extends Model
 
     protected $fillable = [
         'id',
-        'title',
+        'name',
         'product_id'
     ];
 
