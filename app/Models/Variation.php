@@ -12,7 +12,8 @@ class Variation extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
+        'id',
+        'title',
         'product_id'
     ];
 
