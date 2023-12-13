@@ -4,12 +4,22 @@ declare(strict_types=1);
 
 namespace App\MoonShine\Pages\Variation;
 
+use App\Models\Component;
 use App\Models\Product;
+use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\ProductResource;
+use MoonShine\ActionButtons\ActionButton;
+use MoonShine\Buttons\DeleteButton;
+use MoonShine\Buttons\EditButton;
+use MoonShine\Components\TableBuilder;
 use MoonShine\Contracts\Resources\ResourceContract;
+use MoonShine\Decorations\Block;
+use MoonShine\Decorations\Divider;
+use MoonShine\Fields\Position;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Text;
 use MoonShine\Pages\Crud\FormPage;
+use MoonShine\TypeCasts\ModelCast;
 
 class VariationFormPage extends FormPage
 {
@@ -23,8 +33,9 @@ class VariationFormPage extends FormPage
     {
         parent::__construct($title, $alias, $resource);
 
-        $this->relatedProduct = !empty(request()->get('relatedProductId'))
-            ? Product::query()->findOrFail((int)request()->get('relatedProductId'))
+        $relatedProductId = request()->get('relatedProductId');
+        $this->relatedProduct = !empty($relatedProductId)
+            ? Product::query()->findOrFail((int)$relatedProductId)
             : null;
     }
 
@@ -34,6 +45,11 @@ class VariationFormPage extends FormPage
         $productResource = new ProductResource();
 
         array_shift($breadcrumbs);
+
+        if(!$this->getResource()->getItem())
+        {
+            $breadcrumbs[array_keys($breadcrumbs)[0]] .= ' вариацию';
+        }
         return [
                 $productResource->url() => $productResource->title()
             ]
@@ -46,17 +62,45 @@ class VariationFormPage extends FormPage
 
     public function fields(): array
     {
-        return [
-            Text::make('Название', 'name'),
+        $fields = [
+            Block::make([
+                Text::make('Название', 'name'),
 
-            BelongsTo::make(
-                'Продукт',
-                'product',
-                resource: new ProductResource()
-            )
-                ->default($this->relatedProduct)
-                ->disabled()
+                // TODO: заблокировать возможность выбора
+                BelongsTo::make(
+                    'Продукт',
+                    'product',
+                    resource: new ProductResource()
+                )
+                    ->default($this->relatedProduct)
+            ]),
         ];
+
+        if (!empty($this->getResource()->getItem())) {
+            $fields[] = Divider::make();
+            $fields[] = ActionButton::make('Добавить компонент вариации', function () {
+                $variationFormPage = new ComponentResource();
+
+                return $variationFormPage->formPage()
+                    ->route([
+                        'relatedVariationId' => $this->getResource()->getItemID()
+                    ]);
+            })
+                ->customAttributes(['style' => 'margin-bottom: 1rem']);
+            $fields[] = TableBuilder::make(items: $this->getResource()->getItem()->components)
+                ->fields([
+                    Position::make(),
+                    Text::make('Название', formatted: fn($item) => $item->name)
+                ])
+                ->cast(ModelCast::make(Component::class))
+                ->buttons([
+                    EditButton::for(new ComponentResource()),
+                    DeleteButton::for(new ComponentResource())
+                ])
+                ->withNotFound();
+        }
+
+        return $fields;
     }
 
     protected function topLayer(): array

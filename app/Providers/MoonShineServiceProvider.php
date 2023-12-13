@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\VariationResource;
 use MoonShine\Menu\MenuGroup;
@@ -17,7 +18,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     protected function resources(): array
     {
         return [
-            new VariationResource()
+            new VariationResource(),
+            new ComponentResource()
         ];
     }
 
