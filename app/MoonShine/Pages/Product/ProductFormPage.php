@@ -42,7 +42,10 @@ class ProductFormPage extends FormPage
             $fields[] = ActionButton::make('Добавить вариацию продукта', function () {
                 $variationFormPage = new VariationResource();
 
-                return $variationFormPage->formPage()->route();
+                return $variationFormPage->formPage()
+                    ->route([
+                        'relatedProductId' => $this->getResource()->getItemID()
+                    ]);
             })
                 ->customAttributes(['style' => 'margin-bottom: 1rem']);
 
