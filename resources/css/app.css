@@ -1,0 +1,12 @@
+.input-cross{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 20px;
+    height: 20px;
+    background-color: rgba(var(--error-bg), var(--tw-bg-opacity));
+    border-radius: 50%;
+    position: absolute;
+    right: 0;
+    cursor: pointer;
+}

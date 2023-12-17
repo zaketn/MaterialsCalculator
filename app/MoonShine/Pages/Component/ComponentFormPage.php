@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace App\MoonShine\Pages\Component;
 
 use App\Models\Variation;
+use App\MoonShine\Components\Formula;
 use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\VariationResource;
 use MoonShine\Contracts\Resources\ResourceContract;
+use MoonShine\Decorations\Collapse;
+use MoonShine\Decorations\Divider;
+use MoonShine\Decorations\Heading;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Text;
 use MoonShine\Pages\Crud\FormPage;
@@ -61,7 +65,7 @@ class ComponentFormPage extends FormPage
 
     public function fields(): array
     {
-        return [
+        $fields = [
             Text::make('Название', 'name'),
 
             // TODO: заблокировать возможность выбора
@@ -70,7 +74,20 @@ class ComponentFormPage extends FormPage
                 resource: new VariationResource()
             )
                 ->default($this->relatedVariation),
+
+            Divider::make(),
+
+            Heading::make('Рассчётные параметры')
         ];
+
+        foreach($this->getResource()->getItem()->parameters as $parameter){
+            $fields[] = Collapse::make($parameter->name, [
+                Text::make('Название', 'name', fn($parameter) => $parameter->name),
+                Formula::make()
+            ]);
+        }
+
+        return $fields;
     }
 
     protected function topLayer(): array
