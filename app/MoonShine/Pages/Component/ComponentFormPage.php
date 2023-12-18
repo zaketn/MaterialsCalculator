@@ -17,6 +17,11 @@ use MoonShine\Pages\Crud\FormPage;
 
 class ComponentFormPage extends FormPage
 {
+    // TODO: Сделать добавление параметра
+    // TODO: Сделать возможность отправки данных на бэк)
+    // TODO: Пофиксить выводимое название
+
+
     protected ?Variation $relatedVariation;
 
     public function __construct(
@@ -81,7 +86,7 @@ class ComponentFormPage extends FormPage
             foreach($this->getResource()->getItem()->parameters as $parameter){
                 $fields[] = Collapse::make($parameter->name, [
                     Text::make('Название', 'name', fn($item) => $item->name),
-                    Formula::make()
+                    Formula::make($this->getResource()->getItem())
                 ]);
             }
         }

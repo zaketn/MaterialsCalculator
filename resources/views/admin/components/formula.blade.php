@@ -3,11 +3,11 @@
 
     <div class="flex flex-col gap-2 mb-6">
         <div class="btn-group mt-3">
-            <p>Операнды</p>
+            <p>Вводные параметры</p>
             <div class="flex gap-2 mt-2">
-                <template x-for="(inner, value) in operations" :key="value">
-                    <button @click.prevent="addInput" :value="value" class="btn btn-secondary" x-text="inner"></button>
-                </template>
+                @foreach($characteristics as $characteristic)
+                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}" class="btn btn-success">{{ $characteristic['name'] }}</button>
+                @endforeach
             </div>
         </div>
         <div class="btn-group mt-3">
@@ -18,17 +18,34 @@
                 </template>
             </div>
         </div>
+        <div class="btn-group mt-3">
+            <p>Операнды</p>
+            <div class="flex gap-2 mt-2">
+                <template x-for="(inner, value) in operations" :key="value">
+                    <button @click.prevent="addInput" :value="value" class="btn btn-secondary" x-text="inner"></button>
+                </template>
+            </div>
+        </div>
+        <div class="btn-group mt-3">
+            <p>Другое</p>
+            <div class="flex gap-2 mt-2">
+                <template x-for="(inner, value) in other" :key="value">
+                    <button @click.prevent="addInput" :value="value" class="btn btn-warning" x-text="inner"></button>
+                </template>
+            </div>
+        </div>
     </div>
     <x-moonshine::box>
         <div class="flex gap-2 expression-inputs">
-            <template x-for="(inputValue, inputId) of inputs" x-if="inputs.length" :key="inputId">
+            <template x-for="inputValue of inputs" x-if="inputs.length" :key="inputValue.slug">
                 <template x-if="inputValue">
                     <div class="flex relative expression-input"
                          x-data="expressionInput"
                          @click="toggleCloseButton(true)"
                          @click.outside="toggleCloseButton(false)"
                     >
-                        <input type="text" class="form-input" :value="inputValue" style="margin-bottom: 0">
+{{--                        <input type="text" class="form-input" :value="inputValue" style="margin-bottom: 0">--}}
+                        <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug" x-text="inputValue.inner" style="margin-bottom: 0">
                         <div x-show="isCloseButtonHidden" @click="removeElement" class="input-cross">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
                                  stroke="currentColor" aria-hidden="true" class="text-current w-4 h-4  ">
@@ -52,12 +69,10 @@
             inputs: [],
 
             numbers: {
-                "2": "2",
-                "4": "4",
-                "6": "6",
-                "8": "8",
+                "3.14": "3.14",
                 "10": "10",
-                "12": "12",
+                "10000": "10 000",
+                "100000": "100 000",
             },
 
             operations: {
@@ -69,8 +84,20 @@
                 ')': ')',
             },
 
+            other: {
+                '#': 'Добавить свое значение',
+            },
+
             addInput(e) {
-                this.inputs.push(e.target.value)
+                const slug = e.target.value
+                const inner = e.target.innerHTML
+
+                console.log(this.inputs)
+
+                this.inputs.push({
+                    slug: slug,
+                    inner: inner
+                })
             }
         }))
 
