@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\MoonShine\Resources\ComponentResource;
+use App\MoonShine\Resources\MaterialResource;
 use App\MoonShine\Resources\ParameterResource;
 use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\VariationResource;
@@ -44,6 +45,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     {
         return [
             MenuItem::make('Продукты', new ProductResource()),
+
+            MenuItem::make('Материалы', new MaterialResource()),
 
             MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(

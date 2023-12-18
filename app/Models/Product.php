@@ -11,7 +11,12 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name'
+        'name',
+        'characteristics'
+    ];
+
+    protected $casts = [
+        'characteristics' => 'array'
     ];
 
     public function variations(): HasMany

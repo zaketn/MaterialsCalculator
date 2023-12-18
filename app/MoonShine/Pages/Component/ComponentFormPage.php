@@ -11,7 +11,6 @@ use App\MoonShine\Resources\VariationResource;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Decorations\Collapse;
 use MoonShine\Decorations\Divider;
-use MoonShine\Decorations\Heading;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Text;
 use MoonShine\Pages\Crud\FormPage;
@@ -75,16 +74,16 @@ class ComponentFormPage extends FormPage
             )
                 ->default($this->relatedVariation),
 
-            Divider::make(),
-
-            Heading::make('Рассчётные параметры')
+            Divider::make()
         ];
 
-        foreach($this->getResource()->getItem()->parameters as $parameter){
-            $fields[] = Collapse::make($parameter->name, [
-                Text::make('Название', 'name', fn($parameter) => $parameter->name),
-                Formula::make()
-            ]);
+        if(!empty($this->getResource()->getItem()->parameters)){
+            foreach($this->getResource()->getItem()->parameters as $parameter){
+                $fields[] = Collapse::make($parameter->name, [
+                    Text::make('Название', 'name', fn($item) => $item->name),
+                    Formula::make()
+                ]);
+            }
         }
 
         return $fields;
