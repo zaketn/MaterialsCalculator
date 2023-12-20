@@ -12,7 +12,9 @@ class Parameter extends Model
 
     protected $fillable = [
         'name',
-        'component_id'
+        'component_id',
+        'slug',
+        'formula'
     ];
 
     public function component(): BelongsTo

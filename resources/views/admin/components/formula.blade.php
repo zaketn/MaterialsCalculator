@@ -1,58 +1,33 @@
-<div x-data="formulaBuilder" class="mt-3">
-    <h1>Редактор формулы</h1>
-
+<div x-data="formulaBuilder" class="mt-3" xmlns:x-moonshine="http://www.w3.org/1999/html">
     <div class="flex flex-col gap-2 mb-6">
         <div class="btn-group mt-3">
             <p>Вводные параметры</p>
-            <div class="flex gap-2 mt-2">
+            <div class="flex flex-wrap gap-2 mt-2">
                 @foreach($characteristics as $characteristic)
-                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}" class="btn btn-success">{{ $characteristic['name'] }}</button>
+                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}"
+                            class="btn btn-success">{{ $characteristic['name'] }}</button>
                 @endforeach
             </div>
         </div>
-        <div class="btn-group mt-3">
-            <p>Значения</p>
-            <div class="flex gap-2 mt-2">
-                <template x-for="(inner, value) in numbers" :key="value">
-                    <button @click.prevent="addInput" :value="value" class="btn btn-primary" x-text="inner"></button>
-                </template>
+        <template x-for="buttonGroup of predefinedButtons" :key="buttonGroup.title">
+            <div class="btn-group mt-3">
+                <p x-text="buttonGroup.title"></p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    <template x-for="button in buttonGroup.items" :key="button.value">
+                        <button @click.prevent="addInput" :value="button.value" :class="buttonGroup.class"
+                                x-text="button.inner"></button>
+                    </template>
+                </div>
             </div>
-        </div>
-        <div class="btn-group mt-3">
-            <p>Операнды</p>
-            <div class="flex gap-2 mt-2">
-                <template x-for="(inner, value) in operations" :key="value">
-                    <button @click.prevent="addInput" :value="value" class="btn btn-secondary" x-text="inner"></button>
-                </template>
-            </div>
-        </div>
-        <div class="btn-group mt-3">
-            <p>Другое</p>
-            <div class="flex gap-2 mt-2">
-                <template x-for="(inner, value) in other" :key="value">
-                    <button @click.prevent="addInput" :value="value" class="btn btn-warning" x-text="inner"></button>
-                </template>
-            </div>
-        </div>
+        </template>
     </div>
     <x-moonshine::box>
-        <div class="flex gap-2 expression-inputs">
-            <template x-for="inputValue of inputs" x-if="inputs.length" :key="inputValue.slug">
+        <div class="flex flex-wrap gap-2 expression-inputs">
+            <template x-for="(inputValue, index) of inputs" x-if="inputs.length > 0" :key="index">
                 <template x-if="inputValue">
-                    <div class="flex relative expression-input"
-                         x-data="expressionInput"
-                         @click="toggleCloseButton(true)"
-                         @click.outside="toggleCloseButton(false)"
-                    >
-{{--                        <input type="text" class="form-input" :value="inputValue" style="margin-bottom: 0">--}}
-                        <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug" x-text="inputValue.inner" style="margin-bottom: 0">
-                        <div x-show="isCloseButtonHidden" @click="removeElement" class="input-cross">
-                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
-                                 stroke="currentColor" aria-hidden="true" class="text-current w-4 h-4  ">
-                                <path stroke-linecap="round" stroke-linejoin="round"
-                                      d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"></path>
-                            </svg>
-                        </div>
+                    <div class="flex expression-input">
+                        <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug"
+                                x-text="inputValue.inner" style="margin-bottom: 0"></button>
                     </div>
                 </template>
             </template>
@@ -60,57 +35,107 @@
                 <p>Постройте выражение с помощью кнопок выше.</p>
             </template>
         </div>
+
+        <x-moonshine::form.input
+{{--            class="hidden"--}}
+            name="{{ $parameter->slug. '[formula]' }}"
+            x-model="JSON.stringify(inputs)"
+            @change="console.log(inputs)"
+        />
+
+        <div class="flex mt-3" x-show="inputs.length > 0">
+            <button @click.prevent="clearInputs" type="text" class="btn btn form_submit_button">Очистить</button>
+        </div>
     </x-moonshine::box>
 </div>
 
 <script>
     document.addEventListener('alpine:init', () => {
         Alpine.data('formulaBuilder', () => ({
-            inputs: [],
-
-            numbers: {
-                "3.14": "3.14",
-                "10": "10",
-                "10000": "10 000",
-                "100000": "100 000",
+            encoded: undefined,
+            init() {
+                encoded = JSON.parse({!! json_encode($parameter->formula) !!})
             },
 
-            operations: {
-                '+': '+',
-                '-': '-',
-                '*': '*',
-                '/': '/',
-                '(': '(',
-                ')': ')',
-            },
+            inputs: this.encoded,
 
-            other: {
-                '#': 'Добавить свое значение',
-            },
+            predefinedButtons: [
+                {
+                    title: 'Числа',
+                    class: 'btn btn-primary',
+                    items: [
+                        {
+                            inner: "3.14",
+                            value: "3.14",
+                        },
+                        {
+                            inner: "10",
+                            value: "10",
+                        },
+                        {
+                            inner: "10 000",
+                            value: "10000",
+                        },
+                        {
+                            inner: "100 000",
+                            value: "100000",
+                        }
+                    ]
+                },
+                {
+                    title: 'Действия',
+                    class: 'btn btn-secondary',
+                    items: [
+                        {
+                            inner: '+',
+                            value: '+'
+                        },
+                        {
+                            inner: '-',
+                            value: '-'
+                        },
+                        {
+                            inner: '*',
+                            value: '*'
+                        },
+                        {
+                            inner: '/',
+                            value: '/'
+                        },
+                        {
+                            inner: '(',
+                            value: '('
+                        },
+                        {
+                            inner: ')',
+                            value: ')'
+                        },
+                    ]
+                },
+                {
+                    title: 'Другое',
+                    class: 'btn btn-warning',
+                    items: [
+                        {
+                            inner: 'Добавьте своё значение',
+                            value: '#'
+                        }
+                    ]
+                }
+            ],
 
             addInput(e) {
                 const slug = e.target.value
                 const inner = e.target.innerHTML
 
-                console.log(this.inputs)
-
                 this.inputs.push({
                     slug: slug,
                     inner: inner
                 })
-            }
-        }))
-
-        Alpine.data('expressionInput', () => ({
-            isCloseButtonHidden: false,
-
-            toggleCloseButton(value) {
-                this.isCloseButtonHidden = value
             },
 
-            removeElement(e) {
-                console.log(this.inputs)
-                e.target.closest('.expression-input').remove()
+            clearInputs() {
+                this.inputs = []
             }
         }))
     })

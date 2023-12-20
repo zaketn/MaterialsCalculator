@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\MoonShine\Components;
 
 use App\Models\Component;
+use App\Models\Parameter;
 use App\Models\Product;
 use MoonShine\Components\MoonShineComponent;
 
@@ -18,9 +19,11 @@ final class Formula extends MoonShineComponent
 
     /**
      * @param Component $component
+     * @param Parameter $parameter
      */
     public function __construct(
-        protected Component $component
+        protected Component $component,
+        protected Parameter $parameter
     )
     {
         $this->product = $this->component->variation->product;
@@ -29,6 +32,7 @@ final class Formula extends MoonShineComponent
     protected function viewData(): array
     {
         return [
+            'parameter' => $this->parameter,
             'characteristics' => $this->product->characteristics
         ];
     }

@@ -7,6 +7,7 @@ namespace App\MoonShine\Resources;
 use App\Models\Material;
 use Illuminate\Database\Eloquent\Model;
 use MoonShine\Decorations\Block;
+use MoonShine\Enums\ClickAction;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Json;
 use MoonShine\Fields\Number;
@@ -21,6 +22,7 @@ class MaterialResource extends ModelResource
 
     protected string $title = 'Материалы';
     protected string $column = 'name';
+    protected ?ClickAction $clickAction = ClickAction::EDIT;
 
     public function fields(): array
     {

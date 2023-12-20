@@ -15,7 +15,6 @@ use MoonShine\Components\TableBuilder;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Decorations\Block;
 use MoonShine\Decorations\Divider;
-use MoonShine\Fields\Position;
 use MoonShine\Fields\Relationships\BelongsTo;
 use MoonShine\Fields\Text;
 use MoonShine\Pages\Crud\FormPage;
@@ -35,7 +34,7 @@ class VariationFormPage extends FormPage
 
         $relatedProductId = request()->get('relatedProductId');
         $this->relatedProduct = !empty($relatedProductId)
-            ? Product::query()->findOrFail((int)$relatedProductId)
+            ? Product::query()->find((int)$relatedProductId)
             : null;
     }
 
@@ -46,8 +45,7 @@ class VariationFormPage extends FormPage
 
         array_shift($breadcrumbs);
 
-        if(!$this->getResource()->getItem())
-        {
+        if (!$this->getResource()->getItem()) {
             $breadcrumbs[array_keys($breadcrumbs)[0]] .= ' вариацию';
         }
         return [
@@ -87,14 +85,15 @@ class VariationFormPage extends FormPage
                     ]);
             })
                 ->customAttributes(['style' => 'margin-bottom: 1rem']);
+
             $fields[] = TableBuilder::make(items: $this->getResource()->getItem()->components)
                 ->fields([
-                    Position::make(),
                     Text::make('Название', formatted: fn($item) => $item->name)
                 ])
                 ->cast(ModelCast::make(Component::class))
                 ->buttons([
                     EditButton::for(new ComponentResource()),
+
                     DeleteButton::for(new ComponentResource())
                 ])
                 ->withNotFound();

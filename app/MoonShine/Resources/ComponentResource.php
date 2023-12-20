@@ -19,6 +19,8 @@ class ComponentResource extends ModelResource
 
     protected string $column = 'name';
 
+    protected array $with = ['parameters'];
+
     public function redirectAfterDelete(): string
     {
         $productResource = new VariationResource();

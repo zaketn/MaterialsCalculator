@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\MoonShine\Pages\Component\ComponentFormPage;
 use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\MaterialResource;
 use App\MoonShine\Resources\ParameterResource;
@@ -38,7 +39,9 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
 
     protected function pages(): array
     {
-        return [];
+        return [
+            ComponentFormPage::make()
+        ];
     }
 
     protected function menu(): array
