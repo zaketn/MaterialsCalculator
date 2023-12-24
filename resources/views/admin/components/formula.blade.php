@@ -1,4 +1,4 @@
-<div x-data="formulaBuilder" class="mt-3" xmlns:x-moonshine="http://www.w3.org/1999/html">
+<div x-data="{{ str_replace('-', '_', $parameter->slug) . '_formulaBuilder' }}" class="mt-3" xmlns:x-moonshine="http://www.w3.org/1999/html">
     <div class="flex flex-col gap-2 mb-6">
         <div class="btn-group mt-3">
             <p>Вводные параметры</p>
@@ -37,7 +37,7 @@
         </div>
 
         <x-moonshine::form.input
-{{--            class="hidden"--}}
+            class="hidden"
             name="{{ $parameter->slug. '[formula]' }}"
             x-model="JSON.stringify(inputs)"
             @change="console.log(inputs)"
@@ -51,13 +51,8 @@
 
 <script>
     document.addEventListener('alpine:init', () => {
-        Alpine.data('formulaBuilder', () => ({
-            encoded: undefined,
-            init() {
-                encoded = JSON.parse({!! json_encode($parameter->formula) !!})
-            },
-
-            inputs: this.encoded,
+        Alpine.data(`{{ str_replace('-', '_', $parameter->slug) . '_formulaBuilder' }}`, () => ({
+            inputs: {!! $parameter->formula ?? '[]' !!},
 
             predefinedButtons: [
                 {
