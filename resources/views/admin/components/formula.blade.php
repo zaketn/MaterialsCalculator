@@ -1,4 +1,5 @@
-<div x-data="{{ str_replace('-', '_', $parameter->slug) . '_formulaBuilder' }}" class="mt-3" xmlns:x-moonshine="http://www.w3.org/1999/html">
+<div x-data="{{ str_replace('-', '_', $parameter->slug) . '_formulaBuilder' }}" class="mt-3"
+     xmlns:x-moonshine="http://www.w3.org/1999/html">
     <div class="flex flex-col gap-2 mb-6">
         <div class="btn-group mt-3">
             <p>Вводные параметры</p>
@@ -20,6 +21,15 @@
                 </div>
             </div>
         </template>
+        <div class="btn-group mt-3">
+            <p>Добавьте своё значение</p>
+            <div class="flex gap-2 mt-2">
+                <x-moonshine::form.input
+                    x-ref="customInput"
+                />
+                <button @click.prevent="addCustomInput" type="text" class="btn btn form_submit_button">Добавить</button>
+            </div>
+        </div>
     </div>
     <x-moonshine::box>
         <div class="flex flex-wrap gap-2 expression-inputs">
@@ -106,26 +116,25 @@
                             value: ')'
                         },
                     ]
-                },
-                {
-                    title: 'Другое',
-                    class: 'btn btn-warning',
-                    items: [
-                        {
-                            inner: 'Добавьте своё значение',
-                            value: '#'
-                        }
-                    ]
                 }
             ],
 
             addInput(e) {
                 const slug = e.target.value
-                const inner = e.target.innerHTML
+                const inner = e.target.innerHTML ?? e.target.value
 
                 this.inputs.push({
                     slug: slug,
                     inner: inner
+                })
+            },
+
+            addCustomInput(e) {
+                const value = this.$refs.customInput.value.replace(',', '.')
+
+                this.inputs.push({
+                    slug: value,
+                    inner: value
                 })
             },
 

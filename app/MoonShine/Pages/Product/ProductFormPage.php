@@ -32,10 +32,6 @@ class ProductFormPage extends FormPage
     public function __construct(?string $title = null, ?string $alias = null, ?ResourceContract $resource = null)
     {
         parent::__construct($title, $alias, $resource);
-
-        $this->materials = Material::all()
-            ->pluck('name')
-            ->toArray();
     }
 
     public function title(): string
@@ -94,7 +90,9 @@ class ProductFormPage extends FormPage
                                 'numeric' => 'Число',
                                 'string' => 'Строка'
                             ],
-                            'Материалы' => $this->materials
+                            'Другое' => [
+                                Material::class => 'Материал'
+                            ]
                         ])
                 ])
                 ->onApply(function(Product $product, $value, Field $field){
