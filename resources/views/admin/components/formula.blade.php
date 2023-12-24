@@ -132,6 +132,9 @@
             addCustomInput(e) {
                 const value = this.$refs.customInput.value.replace(',', '.')
 
+                if (typeof value != "string") return
+                if (isNaN(value) && isNaN(parseFloat(value))) return
+
                 this.inputs.push({
                     slug: value,
                     inner: value
