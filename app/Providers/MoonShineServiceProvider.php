@@ -13,7 +13,6 @@ use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\ServiceResource;
 use App\MoonShine\Resources\VariationResource;
 use App\MoonShine\Resources\WorkResource;
-use Illuminate\Support\Facades\Vite;
 use MoonShine\Menu\MenuGroup;
 use MoonShine\Menu\MenuItem;
 use MoonShine\Providers\MoonShineApplicationServiceProvider;
@@ -22,15 +21,6 @@ use MoonShine\Resources\MoonShineUserRoleResource;
 
 class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
 {
-    public function boot(): void
-    {
-        parent::boot();
-
-        moonshineAssets()->add([
-            Vite::asset('resources/css/app.css'),
-        ]);
-    }
-
     protected function resources(): array
     {
         return [
