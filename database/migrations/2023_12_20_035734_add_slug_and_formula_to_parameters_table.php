@@ -16,7 +16,7 @@ return new class extends Migration
 
             $table->json('formula')
                 ->after('slug')
-                ->nullable();
+                ->default('[]');
         });
     }
 

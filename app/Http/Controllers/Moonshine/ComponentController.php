@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Moonshine;
 
 use App\Http\Controllers\Controller;
 use App\Models\Component;
+use App\Models\Parameter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class ComponentController extends Controller
 {
-    public function __invoke(Request $request)
+    public function save(Request $request)
     {
         $component = Component::query()->find((int)$request->post('id'));
 
@@ -30,6 +32,18 @@ class ComponentController extends Controller
                 ]
             );
         }
+
+        return redirect()->back();
+    }
+
+    public function store(Request $request)
+    {
+        Parameter::query()->create([
+            'name' => $request->post('name'),
+            'formula' => '[]',
+            'slug' => Str::slug($request->post('name')),
+            'component_id' => $request->post('component_id')
+        ]);
 
         return redirect()->back();
     }

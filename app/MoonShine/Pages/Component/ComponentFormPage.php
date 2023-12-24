@@ -9,6 +9,7 @@ use App\Models\Variation;
 use App\MoonShine\Components\Formula;
 use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\VariationResource;
+use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Components\FormBuilder;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Decorations\Collapse;
@@ -43,7 +44,23 @@ class ComponentFormPage extends FormPage
                 ->setAttribute('type', 'hidden'),
 
             Text::make('Название', 'name')
-                ->default($this->component->name),
+                ->default($this->component->name)
+                ->setAttribute('style', 'margin-bottom: 1.5rem'),
+
+            ActionButton::make('Добавить параметр')
+                ->inOffCanvas(
+                    fn() => 'Добавить параметр',
+                    fn() => form()->fields(
+                        [
+                            Text::make('', 'component_id')
+                                ->setAttribute('type', 'hidden')
+                                ->fill($this->getResource()->getItem()->id),
+
+                            Text::make('Название', 'name')
+                        ]
+                    )
+                    ->action(route('component.store'))
+                ),
 
             Divider::make()
         ];

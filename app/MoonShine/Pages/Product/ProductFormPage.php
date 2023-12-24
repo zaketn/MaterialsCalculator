@@ -87,8 +87,8 @@ class ProductFormPage extends FormPage
                     Select::make('Тип поля', 'type')
                         ->options([
                             'Общее' => [
-                                'numeric' => 'Число',
-                                'string' => 'Строка'
+                                'number' => 'Число',
+                                'text' => 'Строка'
                             ],
                             'Другое' => [
                                 Material::class => 'Материал'
@@ -98,7 +98,7 @@ class ProductFormPage extends FormPage
                 ->onApply(function(Product $product, $value, Field $field){
                     foreach($value as $i => $type){
                         if(isset($type['name'])){
-                            $value[$i]['slug'] = Str::slug($type['name']) . '_' . rand();
+                            $value[$i]['slug'] = Str::slug($type['name']);
                         }
                     }
                     $product->characteristics = $value;
