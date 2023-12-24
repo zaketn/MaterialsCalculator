@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Material extends Model
+class Service extends Model
 {
     use HasFactory;
 
@@ -14,14 +14,12 @@ class Material extends Model
         'id',
         'name',
         'unit',
+        'difficult_coef',
         'price',
-        'in_stock',
-        'reserved',
-        'shipped'
     ];
 
-    public function type() : BelongsTo
+    public function work(): BelongsTo
     {
-        return $this->belongsTo(MaterialType::class);
+        return $this->belongsTo(Service::class);
     }
 }

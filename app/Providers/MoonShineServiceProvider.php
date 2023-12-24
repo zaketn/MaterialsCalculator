@@ -10,7 +10,9 @@ use App\MoonShine\Resources\MaterialResource;
 use App\MoonShine\Resources\MaterialTypeResource;
 use App\MoonShine\Resources\ParameterResource;
 use App\MoonShine\Resources\ProductResource;
+use App\MoonShine\Resources\ServiceResource;
 use App\MoonShine\Resources\VariationResource;
+use App\MoonShine\Resources\WorkResource;
 use Illuminate\Support\Facades\Vite;
 use MoonShine\Menu\MenuGroup;
 use MoonShine\Menu\MenuItem;
@@ -35,7 +37,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
             new VariationResource(),
             new ComponentResource(),
             new ParameterResource(),
-            new MaterialResource()
+            new MaterialResource(),
+            new ServiceResource()
         ];
     }
 
@@ -52,6 +55,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
             MenuItem::make('Продукты', new ProductResource()),
 
             MenuItem::make('Материалы', new MaterialTypeResource()),
+
+            MenuItem::make('Работы', new WorkResource()),
 
             MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(

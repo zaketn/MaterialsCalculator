@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class MaterialType extends Model
+class Work extends Model
 {
     use HasFactory;
 
@@ -14,8 +14,8 @@ class MaterialType extends Model
         'name'
     ];
 
-    public function materials() : HasMany
+    public function services() : HasMany
     {
-        return $this->hasMany(Material::class);
+        return $this->hasMany(Service::class);
     }
 }
