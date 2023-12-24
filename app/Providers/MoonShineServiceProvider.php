@@ -7,6 +7,7 @@ namespace App\Providers;
 use App\MoonShine\Pages\Component\ComponentFormPage;
 use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\MaterialResource;
+use App\MoonShine\Resources\MaterialTypeResource;
 use App\MoonShine\Resources\ParameterResource;
 use App\MoonShine\Resources\ProductResource;
 use App\MoonShine\Resources\VariationResource;
@@ -33,7 +34,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
         return [
             new VariationResource(),
             new ComponentResource(),
-            new ParameterResource()
+            new ParameterResource(),
+            new MaterialResource()
         ];
     }
 
@@ -49,7 +51,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
         return [
             MenuItem::make('Продукты', new ProductResource()),
 
-            MenuItem::make('Материалы', new MaterialResource()),
+            MenuItem::make('Материалы', new MaterialTypeResource()),
 
             MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(

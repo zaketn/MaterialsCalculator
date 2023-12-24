@@ -10,11 +10,17 @@ class Material extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'name',
-        'items'
+        'unit',
+        'price',
+        'in_stock',
+        'reserved',
+        'shipped'
     ];
 
-    protected $casts = [
-        'items' => 'array'
-    ];
+    public function type()
+    {
+        return $this->belongsTo(MaterialType::class);
+    }
 }

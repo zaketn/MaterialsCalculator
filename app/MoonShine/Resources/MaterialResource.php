@@ -7,43 +7,21 @@ namespace App\MoonShine\Resources;
 use App\Models\Material;
 use Illuminate\Database\Eloquent\Model;
 use MoonShine\Decorations\Block;
-use MoonShine\Enums\ClickAction;
 use MoonShine\Fields\ID;
-use MoonShine\Fields\Json;
-use MoonShine\Fields\Number;
-use MoonShine\Fields\Position;
-use MoonShine\Fields\Select;
-use MoonShine\Fields\Text;
 use MoonShine\Resources\ModelResource;
 
 class MaterialResource extends ModelResource
 {
     protected string $model = Material::class;
 
-    protected string $title = 'Материалы';
+    protected string $title = 'Materials';
     protected string $column = 'name';
-    protected ?ClickAction $clickAction = ClickAction::EDIT;
 
     public function fields(): array
     {
         return [
             Block::make([
                 ID::make()->sortable(),
-                Text::make('Название', 'name'),
-                Json::make('Товары', 'items')
-                    ->fields([
-                        Position::make(),
-                        Text::make('Название', 'name'),
-                        Number::make('Цена', 'price'),
-                        Select::make('Единица измерения', 'unit')
-                            ->options([
-                                'kg' => 'кг.',
-                                'qm' => 'кв.м',
-                                'pc' => 'шт.',
-                                'pm.' => 'п.м',
-                            ]),
-                    ])
-                ->removable()
             ]),
         ];
     }
