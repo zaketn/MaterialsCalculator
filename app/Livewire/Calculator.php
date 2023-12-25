@@ -2,6 +2,11 @@
 
 namespace App\Livewire;
 
+use App\Actions\Calculator\AddCleanSlugAction;
+use App\Actions\Calculator\CalculateFormulaAction;
+use App\Actions\Calculator\FillFormulaValuesAction;
+use App\Actions\Calculator\GetInputFormulaComponentsAction;
+use App\Actions\Calculator\GetInputsFromCharacteristicsAction;
 use App\Models\Material;
 use App\Models\Product;
 use App\Models\Variation;
@@ -45,6 +50,27 @@ class Calculator extends Component
 
     public function updatedSelectedVariationId(int $selectedVariationId): void
     {
+        $this->loadVariationDependencies($selectedVariationId);
+        $this->printInputs();
+    }
+
+    public function calculate(): void
+    {
+        foreach ($this->userInputs as $i => $userInput) {
+            if ($userInput['type'] == Material::class) {
+                $this->other[] = Material::query()->find($userInput['value']);
+            }
+        }
+
+        $fillFormulaValuesAction = new FillFormulaValuesAction();
+        $this->formulas = $fillFormulaValuesAction($this->userInputs, $this->formulas);
+
+        $calculateFormulaAction = new CalculateFormulaAction();
+        $this->calculated = $calculateFormulaAction($this->formulas);
+    }
+
+    private function loadVariationDependencies(int $selectedVariationId): void
+    {
         $this->selectedVariation = Variation::query()
             ->with('components.parameters')
             ->firstWhere('id', $selectedVariationId);
@@ -52,94 +78,39 @@ class Calculator extends Component
         $this->components = $this->selectedVariation
             ->components;
 
+        $this->parameters = collect();
         foreach ($this->components as $component) {
             foreach ($component->parameters as $parameter) {
                 $this->parameters->push($parameter);
             }
         }
-
-        $this->getInputs();
     }
 
-    public function calculate(): void
+    private function printInputs(): void
     {
-        foreach($this->userInputs as $i => $userInput){
-            if($userInput['type'] == Material::class){
-                $this->other[] = Material::query()->find($userInput['value']);
-            }
-        }
+        $this->addCleanSlugToInputFormulaComponents();
 
-        foreach ($this->userInputs as $userInput) {
-            foreach ($this->formulas as $parameterName => $parameterFormulas) {
-                foreach($parameterFormulas as $i => $formula){
-                    if ($userInput['slug'] === $formula['value']) {
-                        $this->formulas[$parameterName][$i]['value'] = $userInput['value'];
-                    }
-                }
-            }
-        }
+        $getInputsFromCharacteristicsAction = new GetInputsFromCharacteristicsAction();
+        $getInputFormulaComponentsAction = new GetInputFormulaComponentsAction();
 
-        $inlineFormulas = array_map(function($parameter){
-            $formula = '';
+        $inputFormulaComponents = $getInputFormulaComponentsAction($this->formulas);
 
-            foreach($parameter as $formulaItem){
-                $formula .= $formulaItem['value'];
-            }
+        $characteristicsToDisplay = $getInputsFromCharacteristicsAction(
+            $inputFormulaComponents,
+            $this->selectedProduct->characteristics
+        );
 
-            return $formula;
-        }, $this->formulas);
-
-        $this->calculated = array_map(function($formula){
-            return eval('return ' . $formula . ';');
-        }, $inlineFormulas);
+        $this->userInputs = $characteristicsToDisplay;
     }
 
-    /**
-     * Получает расчётные значения из формулы
-     *
-     * @return void
-     */
-    private function getInputs(): void
+    private function addCleanSlugToInputFormulaComponents(): void
     {
-        $formulas = $this->parameters->pluck('formula', 'name');
-        $inputsToShow = [];
+        $addCleanSlugAction = new AddCleanSlugAction();
 
-        $formulas = $formulas->map(
-            fn(string $formula) => json_decode($formula, true)
-        )
-            ->toArray();
+        $separatedFormulaComponents = $addCleanSlugAction(
+            $this->parameters->pluck('formula', 'name')
+        );
 
-        foreach ($formulas as $parameter => $formula) {
-            foreach ($formula as $i => $formulaValue) {
-                $isParameterValue = preg_match('/^\[.*\]$/', $formulaValue['slug'], $foundedInputSlug);
-
-                if (!$isParameterValue) {
-                    $formulas[$parameter][$i]['value'] = $formulaValue['slug'];
-                } else {
-                    $trimmedName = trim($foundedInputSlug[0], '[]');
-
-                    $formulas[$parameter][$i]['value'] = $trimmedName;
-                    $inputsToShow[] = $trimmedName;
-                }
-            }
-        }
-        $this->formulas = $formulas;
-        $this->printInputs($inputsToShow);
-    }
-
-    /**
-     * Собирает на вывод список полей заполняемых пользователем
-     *
-     * @return void
-     */
-    private function printInputs(array $inputNames): void
-    {
-        $productsCharacteristics = $this->selectedProduct->characteristics;
-
-        foreach ($inputNames as $input) {
-            foreach ($productsCharacteristics as $characteristic) {
-                if ($characteristic['slug'] === $input) $this->userInputs[] = $characteristic;
-            }
-        }
+        $this->formulas = $separatedFormulaComponents;
     }
 }

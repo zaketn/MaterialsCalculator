@@ -42,11 +42,14 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     protected function menu(): array
     {
         return [
-            MenuItem::make('Продукты', new ProductResource()),
+            MenuItem::make('Продукты', new ProductResource())
+                ->icon('heroicons.shopping-cart'),
 
-            MenuItem::make('Материалы', new MaterialTypeResource()),
+            MenuItem::make('Материалы', new MaterialTypeResource())
+                ->icon('heroicons.puzzle-piece'),
 
-            MenuItem::make('Работы', new WorkResource()),
+            MenuItem::make('Работы', new WorkResource())
+                ->icon('heroicons.wrench'),
 
             MenuGroup::make(static fn() => __('moonshine::ui.resource.system'), [
                 MenuItem::make(
@@ -57,7 +60,7 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
                     static fn() => __('moonshine::ui.resource.role_title'),
                     new MoonShineUserRoleResource()
                 ),
-            ]),
+            ])->icon('heroicons.cog-6-tooth'),
         ];
     }
 
