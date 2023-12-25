@@ -7,7 +7,6 @@ use App\Actions\Calculator\CalculateFormulaAction;
 use App\Actions\Calculator\FillFormulaValuesAction;
 use App\Actions\Calculator\GetInputFormulaComponentsAction;
 use App\Actions\Calculator\GetInputsFromCharacteristicsAction;
-use App\Models\Material;
 use App\Models\Product;
 use App\Models\Variation;
 use Illuminate\Database\Eloquent\Collection;
@@ -30,8 +29,6 @@ class Calculator extends Component
     public array $userInputs;
     public array $formulas;
     public array $calculated;
-    public array $other;
-
 
     public function __construct()
     {
@@ -56,12 +53,6 @@ class Calculator extends Component
 
     public function calculate(): void
     {
-        foreach ($this->userInputs as $i => $userInput) {
-            if ($userInput['type'] == Material::class) {
-                $this->other[] = Material::query()->find($userInput['value']);
-            }
-        }
-
         $fillFormulaValuesAction = new FillFormulaValuesAction();
         $this->formulas = $fillFormulaValuesAction($this->userInputs, $this->formulas);
 

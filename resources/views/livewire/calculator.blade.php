@@ -47,7 +47,7 @@
                                 <option selected></option>
                                 @foreach($userInput['type']::all() as $value)
                                     <option wire:key="{{ $value->id }}"
-                                            value="{{ $value->id }}">{{ $value->name }}</option>
+                                            value="{{ $value->price }}">{{ $value->name }}</option>
                                 @endforeach
                             </select>
                         @else
@@ -76,15 +76,6 @@
             @foreach($calculated as $parameterName => $calculatedResult)
                 <div wire:key="{{ $parameterName }}">
                     <p>{{ $parameterName }}: {{ $calculatedResult }}</p>
-                </div>
-            @endforeach
-        @endif
-
-        @if($other)
-            <p><strong>Материалы: </strong></p>
-            @foreach($other as $otherItem)
-                <div wire:key="{{ $otherItem->id }}">
-                    <p>{{ $otherItem->name }}: {{ $otherItem->price }}</p>
                 </div>
             @endforeach
         @endif

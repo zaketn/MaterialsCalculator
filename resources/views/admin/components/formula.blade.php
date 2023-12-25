@@ -10,6 +10,15 @@
                 @endforeach
             </div>
         </div>
+        <div class="btn-group mt-3">
+            <p>Расчётные параметры</p>
+            <div class="flex flex-wrap gap-2 mt-2">
+                @foreach($characteristics as $characteristic)
+                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}"
+                            class="btn btn-warning">{{ $characteristic['name'] }}</button>
+                @endforeach
+            </div>
+        </div>
         <template x-for="buttonGroup of predefinedButtons" :key="buttonGroup.title">
             <div class="btn-group mt-3">
                 <p x-text="buttonGroup.title"></p>
