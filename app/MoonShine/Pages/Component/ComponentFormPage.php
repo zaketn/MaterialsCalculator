@@ -56,15 +56,16 @@ class ComponentFormPage extends FormPage
                     fn() => 'Добавить параметр',
                     fn() => form()->fields(
                         [
-                            Text::make('', 'component_id')
+                            Text::make('asdasd', 'component_id')
                                 ->setAttribute('type', 'hidden')
                                 ->fill($this->getResource()->getItem()?->id),
 
                             Text::make('Название', 'name')
                         ]
                     )
-                    ->action(route('component.store'))
-                ),
+                        ->action(route('component.store'))
+                )
+                ->canSee(fn() => !empty($this->getResource()->getItem())),
 
             Divider::make()
         ];
@@ -74,7 +75,11 @@ class ComponentFormPage extends FormPage
                 $fields[] = Collapse::make($parameter->name, [
                     Text::make('Название параметра', $parameter->slug . '[name]')
                         ->fill($parameter->name),
-                    Formula::make($this->getResource()->getItem(), $parameter)
+                    Formula::make(
+                        $this->getResource()->getItem(),
+                        $this->getResource()->getItem()->parameters,
+                        $parameter
+                    )
                 ]);
             }
         }

@@ -13,9 +13,10 @@
         <div class="btn-group mt-3">
             <p>Расчётные параметры</p>
             <div class="flex flex-wrap gap-2 mt-2">
-                @foreach($characteristics as $characteristic)
-                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}"
-                            class="btn btn-warning">{{ $characteristic['name'] }}</button>
+                @foreach($parameters as $anotherParameter)
+                    @continue($anotherParameter === $parameter)
+                    <button @click.prevent="addInput" value="{{ '[' .$anotherParameter['slug'] . ']' }}"
+                            class="btn btn-warning">{{ $anotherParameter['name'] }}</button>
                 @endforeach
             </div>
         </div>

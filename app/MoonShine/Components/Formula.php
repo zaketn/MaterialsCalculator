@@ -7,6 +7,7 @@ namespace App\MoonShine\Components;
 use App\Models\Component;
 use App\Models\Parameter;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Collection;
 use MoonShine\Components\MoonShineComponent;
 
 /**
@@ -23,6 +24,7 @@ final class Formula extends MoonShineComponent
      */
     public function __construct(
         protected Component $component,
+        protected Collection $parameters,
         protected Parameter $parameter
     )
     {
@@ -32,6 +34,7 @@ final class Formula extends MoonShineComponent
     protected function viewData(): array
     {
         return [
+            'parameters' => $this->parameters,
             'parameter' => $this->parameter,
             'characteristics' => $this->product->characteristics
         ];

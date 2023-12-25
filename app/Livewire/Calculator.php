@@ -81,8 +81,8 @@ class Calculator extends Component
     {
         $this->addCleanSlugToInputFormulaComponents();
 
-        $getInputsFromCharacteristicsAction = new GetInputsFromCharacteristicsAction();
         $getInputFormulaComponentsAction = new GetInputFormulaComponentsAction();
+        $getInputsFromCharacteristicsAction = new GetInputsFromCharacteristicsAction();
 
         $inputFormulaComponents = $getInputFormulaComponentsAction($this->formulas);
 

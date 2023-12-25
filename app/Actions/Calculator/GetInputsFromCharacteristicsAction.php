@@ -25,6 +25,8 @@ class GetInputsFromCharacteristicsAction
             }
         }
 
-        return $characteristicsToDisplay;
+        return collect($characteristicsToDisplay)
+            ->unique()
+            ->toArray();
     }
 }
