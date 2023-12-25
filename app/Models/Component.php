@@ -12,6 +12,7 @@ class Component extends Model
     use HasFactory;
 
     protected $fillable = [
+        'id',
         'name',
         'variation_id'
     ];

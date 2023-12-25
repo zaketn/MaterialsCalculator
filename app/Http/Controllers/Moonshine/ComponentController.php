@@ -12,14 +12,18 @@ class ComponentController extends Controller
 {
     public function save(Request $request)
     {
-        $component = Component::query()->find((int)$request->post('id'));
-
-        $component->update([
-            'name' => $request->post('name')
-        ]);
+        $component = Component::query()->updateOrCreate(
+            [
+                'id' => (int)$request->post('id')
+            ],
+            [
+                'name' => $request->post('name'),
+                'variation_id' => $request->post('variation_id')
+            ]
+        );
 
         foreach ($request->post() as $name => $updatedParameters) {
-            $namesToSkip = ['_token', 'id', 'name'];
+            $namesToSkip = ['_token', 'id', 'name', 'variation_id'];
             if (array_search($name, $namesToSkip) !== false) continue;
 
             $component->parameters()->updateOrCreate(

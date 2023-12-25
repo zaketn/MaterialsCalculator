@@ -40,11 +40,15 @@ class ComponentFormPage extends FormPage
     {
         $fields = [
             Text::make('ID', 'id')
-                ->fill($this->getResource()->getItem()->id)
+                ->fill($this->getResource()->getItem()?->id)
+                ->setAttribute('type', 'hidden'),
+
+            Text::make('variationId', 'variation_id')
+                ->fill($this->getResource()->getItem()?->variation_id ?? $this->getRelatedVariation()?->id)
                 ->setAttribute('type', 'hidden'),
 
             Text::make('Название', 'name')
-                ->default($this->component->name)
+                ->default($this->component?->name)
                 ->setAttribute('style', 'margin-bottom: 1.5rem'),
 
             ActionButton::make('Добавить параметр')
@@ -54,7 +58,7 @@ class ComponentFormPage extends FormPage
                         [
                             Text::make('', 'component_id')
                                 ->setAttribute('type', 'hidden')
-                                ->fill($this->getResource()->getItem()->id),
+                                ->fill($this->getResource()->getItem()?->id),
 
                             Text::make('Название', 'name')
                         ]
@@ -85,7 +89,7 @@ class ComponentFormPage extends FormPage
         $breadcrumbs = parent::breadcrumbs();
         $productResource = new ProductResource();
         $variationResource = new VariationResource();
-        $relatedVariation = $this->getResource()->getItem()->variation;
+        $relatedVariation = !empty($this->getResource()->getItem()) ? $this->getResource()->getItem()->variation : null;
 
         array_shift($breadcrumbs);
 
@@ -101,7 +105,7 @@ class ComponentFormPage extends FormPage
                     : $this->relatedVariation->product->name
             ]
             + [
-                $variationResource->formPage()->route(['resourceItem' => $relatedVariation->id]) => $this->getResource()->getItem()
+                $variationResource->formPage()->route(['resourceItem' => $relatedVariation?->id]) => $this->getResource()->getItem()
                     ? $relatedVariation->name
                     : $this->relatedVariation->name
             ]
