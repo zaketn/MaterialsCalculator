@@ -54,9 +54,11 @@ class Calculator extends Component
 
     public function calculate(): void
     {
-        $calculateService = new CalculateService($this->userInputs, $this->formulas);
+        foreach($this->formulas as $formulaName => $formula) {
+            $calculateService = new CalculateService($this->userInputs, $formula);
 
-        $this->calculated = $this->formulas = $calculateService->calculate();
+            $this->calculated[$formulaName] = $calculateService->calculate();
+        }
     }
 
     private function loadVariationDependencies(int $selectedVariationId): void
@@ -69,10 +71,12 @@ class Calculator extends Component
             ->components;
 
         $this->parameters = collect();
+
         foreach ($this->components as $component) {
-            foreach ($component->parameters as $parameter) {
-                $this->parameters->push($parameter);
-            }
+            $this->parameters->put(
+                $component->name,
+                $component->parameters->pluck('formula', 'name')
+            );
         }
     }
 
@@ -97,9 +101,7 @@ class Calculator extends Component
     {
         $addCleanSlugAction = new AddCleanSlugAction();
 
-        $separatedFormulaComponents = $addCleanSlugAction(
-            $this->parameters->pluck('formula', 'name')
-        );
+        $separatedFormulaComponents = $addCleanSlugAction($this->parameters);
 
         $this->formulas = $separatedFormulaComponents;
     }

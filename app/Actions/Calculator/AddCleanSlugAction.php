@@ -11,38 +11,41 @@ class AddCleanSlugAction
      * Добавляет поле clean_slug к вводимым компонентам формулы, или к компонентам, которые рассчитаны на основе
      * введённых компонентов.
      *
-     * @param Collection $formulas
+     * @param Collection $parameters
      * @return array
      */
-    public function __invoke(Collection $formulas): array
+    public function __invoke(Collection $parameters): array
     {
-        $formulas = $formulas->map(
-            fn(string $formula) => json_decode($formula, true)
+        $parameters = $parameters->map(
+            fn(Collection $parameter) => $parameter->map(fn(string $formula) => json_decode($formula, true))
         )
             ->toArray();
 
-        foreach ($formulas as $parameter => $formula) {
-            foreach ($formula as $i => $formulaValue) {
-                $isParameterValue = preg_match('/^\[.*]$/', $formulaValue['slug'], $foundedInputSlug);
-                $isCalculatedValue = preg_match('/^\{.*}$/', $formulaValue['slug'], $foundedCalculatedSlug);
+//        dd($parameters);
 
-                if (!$isParameterValue && !$isCalculatedValue) {
-                    $formulas[$parameter][$i]['value'] = $formulaValue['slug'];
-                    $formulas[$parameter][$i]['type'] = FormulaComponentType::SIMPLE->name;
-                } else {
-                    $trimmedName = trim($foundedInputSlug[0] ?? $foundedCalculatedSlug[0], '[]{}');
-                    $formulas[$parameter][$i]['clean_slug'] = $trimmedName;
+        foreach ($parameters as $parameterName => $formula) {
+            foreach ($formula as $formulaName => $formulaItem) {
+                foreach($formulaItem as $i => $formulaValue) {
+                    $isParameterValue = preg_match('/^\[.*]$/', $formulaValue['slug'], $foundedInputSlug);
+                    $isCalculatedValue = preg_match('/^\{.*}$/', $formulaValue['slug'], $foundedCalculatedSlug);
 
-                    if (isset($foundedInputSlug[0])) {
-                        $formulas[$parameter][$i]['type'] = FormulaComponentType::INPUT->name;
-                    } else if (isset($foundedCalculatedSlug[0])) {
-                        $formulas[$parameter][$i]['type'] = FormulaComponentType::CALCULATED->name;
+                    if (!$isParameterValue && !$isCalculatedValue) {
+                        $parameters[$parameterName][$formulaName][$i]['value'] = $formulaValue['slug'];
+                        $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::SIMPLE->name;
+                    } else {
+                        $trimmedName = trim($foundedInputSlug[0] ?? $foundedCalculatedSlug[0], '[]{}');
+                        $parameters[$parameterName][$formulaName][$i]['clean_slug'] = $trimmedName;
+
+                        if (isset($foundedInputSlug[0])) {
+                            $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::INPUT->name;
+                        } else if (isset($foundedCalculatedSlug[0])) {
+                            $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::CALCULATED->name;
+                        }
                     }
                 }
             }
         }
 
-
-        return $formulas;
+        return $parameters;
     }
 }

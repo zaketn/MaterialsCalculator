@@ -15,9 +15,11 @@ class GetInputFormulaComponentsAction
         $inputFormulaComponents = [];
 
         foreach ($parameters as $parameter) {
-            foreach($parameter as $formulaComponent) {
-                if(isset($formulaComponent['clean_slug'])){
-                    $inputFormulaComponents[] = $formulaComponent['clean_slug'];
+            foreach($parameter as $formulaItem) {
+                foreach($formulaItem as $formulaValue) {
+                    if(isset($formulaValue['clean_slug'])){
+                        $inputFormulaComponents[] = $formulaValue['clean_slug'];
+                    }
                 }
             }
         }
