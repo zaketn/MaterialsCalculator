@@ -52,7 +52,8 @@ class VariationFormPage extends FormPage
                 $productResource->url() => $productResource->title()
             ]
             + [
-                $productResource->formPage()->route() => $this->relatedProduct->name
+                $productResource->formPage()->route(['resourceItem' =>
+                    $this->relatedProduct->id ?? $this->getResource()->getItem()->product->id])=> $this->relatedProduct->name
                     ?? $this->getResource()->getItem()->product->name
             ]
             + $breadcrumbs;

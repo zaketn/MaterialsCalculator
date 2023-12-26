@@ -23,9 +23,7 @@ class ComponentResource extends ModelResource
 
     public function redirectAfterDelete(): string
     {
-        $productResource = new VariationResource();
-
-        return $productResource->formPage()->route();
+        return redirect()->back()->getTargetUrl();
     }
 
     public function pages(): array

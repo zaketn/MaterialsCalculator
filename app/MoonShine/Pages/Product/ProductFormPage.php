@@ -88,7 +88,6 @@ class ProductFormPage extends FormPage
                         ->options([
                             'Общее' => [
                                 'number' => 'Число',
-                                'text' => 'Строка'
                             ],
                             'Другое' => [
                                 Material::class => 'Материал'
