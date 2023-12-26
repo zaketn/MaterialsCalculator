@@ -3,12 +3,11 @@
 namespace App\Livewire;
 
 use App\Actions\Calculator\AddCleanSlugAction;
-use App\Actions\Calculator\CalculateFormulaAction;
-use App\Actions\Calculator\FillFormulaValuesAction;
 use App\Actions\Calculator\GetInputFormulaComponentsAction;
 use App\Actions\Calculator\GetInputsFromCharacteristicsAction;
 use App\Models\Product;
 use App\Models\Variation;
+use App\Services\Calculator\CalculateService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
@@ -43,6 +42,8 @@ class Calculator extends Component
 
         $this->variations = $this->selectedProduct
             ->variations;
+
+        $this->userInputs = [];
     }
 
     public function updatedSelectedVariationId(int $selectedVariationId): void
@@ -53,11 +54,9 @@ class Calculator extends Component
 
     public function calculate(): void
     {
-        $fillFormulaValuesAction = new FillFormulaValuesAction();
-        $this->formulas = $fillFormulaValuesAction($this->userInputs, $this->formulas);
+        $calculateService = new CalculateService($this->userInputs, $this->formulas);
 
-        $calculateFormulaAction = new CalculateFormulaAction();
-        $this->calculated = $calculateFormulaAction($this->formulas);
+        $this->calculated = $this->formulas = $calculateService->calculate();
     }
 
     private function loadVariationDependencies(int $selectedVariationId): void

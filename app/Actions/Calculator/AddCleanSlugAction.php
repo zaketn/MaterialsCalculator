@@ -2,20 +2,19 @@
 
 namespace App\Actions\Calculator;
 
+use App\Enums\Calculator\FormulaComponentType;
 use Illuminate\Support\Collection;
 
 class AddCleanSlugAction
 {
     /**
-     * Добавляет поле clean_slug к вводимым компонентам формулы.
-     *
-     * Принцип: компонент формулы, у которого slug в формате [component_slug] - вводится пользователем и создается
-     * поле clean_slug, убирающее квадратные скобки из [component_slug].
+     * Добавляет поле clean_slug к вводимым компонентам формулы, или к компонентам, которые рассчитаны на основе
+     * введённых компонентов.
      *
      * @param Collection $formulas
      * @return array
      */
-    public function __invoke(Collection $formulas) : array
+    public function __invoke(Collection $formulas): array
     {
         $formulas = $formulas->map(
             fn(string $formula) => json_decode($formula, true)
@@ -25,12 +24,20 @@ class AddCleanSlugAction
         foreach ($formulas as $parameter => $formula) {
             foreach ($formula as $i => $formulaValue) {
                 $isParameterValue = preg_match('/^\[.*]$/', $formulaValue['slug'], $foundedInputSlug);
+                $isCalculatedValue = preg_match('/^\{.*}$/', $formulaValue['slug'], $foundedCalculatedSlug);
 
-                if (!$isParameterValue) {
+                if (!$isParameterValue && !$isCalculatedValue) {
                     $formulas[$parameter][$i]['value'] = $formulaValue['slug'];
+                    $formulas[$parameter][$i]['type'] = FormulaComponentType::SIMPLE->name;
                 } else {
-                    $trimmedName = trim($foundedInputSlug[0], '[]');
+                    $trimmedName = trim($foundedInputSlug[0] ?? $foundedCalculatedSlug[0], '[]{}');
                     $formulas[$parameter][$i]['clean_slug'] = $trimmedName;
+
+                    if (isset($foundedInputSlug[0])) {
+                        $formulas[$parameter][$i]['type'] = FormulaComponentType::INPUT->name;
+                    } else if (isset($foundedCalculatedSlug[0])) {
+                        $formulas[$parameter][$i]['type'] = FormulaComponentType::CALCULATED->name;
+                    }
                 }
             }
         }

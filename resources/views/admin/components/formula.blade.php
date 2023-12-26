@@ -5,7 +5,7 @@
             <p>Вводные параметры</p>
             <div class="flex flex-wrap gap-2 mt-2">
                 @foreach($characteristics as $characteristic)
-                    <button @click.prevent="addInput" value="{{ '[' .$characteristic['slug'] . ']' }}"
+                    <button @click.prevent="addInput" value="{{ '[' . $characteristic['slug'] . ']' }}"
                             class="btn btn-success">{{ $characteristic['name'] }}</button>
                 @endforeach
             </div>
@@ -15,7 +15,7 @@
             <div class="flex flex-wrap gap-2 mt-2">
                 @foreach($parameters as $anotherParameter)
                     @continue($anotherParameter === $parameter)
-                    <button @click.prevent="addInput" value="{{ '[' .$anotherParameter['slug'] . ']' }}"
+                    <button @click.prevent="addInput" value="{{ '{' . $anotherParameter['slug'] . '}' }}"
                             class="btn btn-warning">{{ $anotherParameter['name'] }}</button>
                 @endforeach
             </div>
