@@ -44,7 +44,8 @@ class MaterialTypeResource extends ModelResource
                                 'kg' => 'кг.'
                             ]),
                         Number::make('Цена','price')
-                            ->buttons(),
+                            ->buttons()
+                            ->step(0.1),
                         Number::make('В наличии','in_stock')
                             ->buttons(),
                         Number::make('Зарезервировано', 'reserved')
