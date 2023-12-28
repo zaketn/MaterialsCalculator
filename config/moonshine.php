@@ -15,9 +15,9 @@ return [
     'title' => env('MOONSHINE_TITLE', 'MoonShine'),
     'logo' => env('MOONSHINE_LOGO'),
     'logo_small' => env('MOONSHINE_LOGO_SMALL'),
-    'developer_name' => env('MOONSHINE_DEVELOPER_NAME', 'MoonShine'),
-    'developer_description' => env('MOONSHINE_DEVELOPER_DESCRIPTION', 'MoonShine'),
-    'developer_site' => env('MOONSHINE_DEVELOPER_SITE', 'MoonShine'),
+    'developer_name' => env('MOONSHINE_DEVELOPER_NAME', 'DEVELOPER NAME'),
+    'developer_description' => env('MOONSHINE_DEVELOPER_DESCRIPTION', 'DEVELOPER DESCRIPTION'),
+    'developer_site' => env('MOONSHINE_DEVELOPER_SITE', 'https://example.com'),
 
     'route' => [
         'domain' => env('MOONSHINE_URL', ''),
