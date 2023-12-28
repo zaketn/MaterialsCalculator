@@ -75,7 +75,9 @@ class CalculateService
             $formula .= $formulaItem['value'];
         }
 
-        return eval("return $formula;");
+        $result = eval("return $formula;");
+
+        return is_float($result) ? round($result, 2) : $result;
     }
 
     private function isParameterCalculated(string $parameterName)

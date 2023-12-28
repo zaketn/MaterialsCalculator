@@ -35,8 +35,16 @@ class Calculator extends Component
         $this->parameters = collect();
     }
 
-    public function updatedSelectedProductId(int $selectedProductId): void
+    public function updatedSelectedProductId(?int $selectedProductId): void
     {
+        if(empty($selectedProductId)) {
+            unset($this->selectedProduct);
+            unset($this->variations);
+            $this->userInputs = [];
+
+            return;
+        }
+
         $this->selectedProduct = Product::query()
             ->find($selectedProductId);
 
@@ -46,8 +54,14 @@ class Calculator extends Component
         $this->userInputs = [];
     }
 
-    public function updatedSelectedVariationId(int $selectedVariationId): void
+    public function updatedSelectedVariationId(?int $selectedVariationId): void
     {
+        if(empty($selectedVariationId)) {
+            $this->userInputs = [];
+
+            return;
+        }
+
         $this->loadVariationDependencies($selectedVariationId);
         $this->printInputs();
     }
@@ -59,6 +73,14 @@ class Calculator extends Component
 
             $this->calculated[$formulaName] = $calculateService->calculate();
         }
+    }
+
+    public function clearAll() : void
+    {
+        unset($this->selectedProduct);
+        unset($this->variations);
+        unset($this->calculated);
+        $this->userInputs = [];
     }
 
     private function loadVariationDependencies(int $selectedVariationId): void

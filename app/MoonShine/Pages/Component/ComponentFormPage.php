@@ -101,11 +101,16 @@ class ComponentFormPage extends FormPage
         if (!$this->getResource()->getItem()) {
             $breadcrumbs[array_keys($breadcrumbs)[0]] .= ' компонент вариации';
         }
+
         return [
                 $productResource->url() => $productResource->title()
             ]
             + [
-                $productResource->formPage()->route() => $this->getResource()->getItem()
+                $productResource->formPage()->route([
+                    'resourceItem' => $this->getResource()->getItem()
+                        ? $relatedVariation->id
+                        : $this->relatedVariation->id
+                ]) => $this->getResource()->getItem()
                     ? $relatedVariation->product->name
                     : $this->relatedVariation->product->name
             ]
