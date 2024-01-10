@@ -64,7 +64,16 @@
         />
 
         <div class="flex mt-3" x-show="inputs.length > 0">
-            <button @click.prevent="clearInputs" type="text" class="btn btn form_submit_button">Очистить</button>
+            <button @click.prevent="clearInputs" type="text" class="btn form_submit_button">Очистить</button>
+        </div>
+    </x-moonshine::box>
+
+    <x-moonshine::box class="mt-3">
+        <div class="flex flex-wrap gap-2 expression-inputs">
+            {!! actionBtn('Удалить параметр', route('parameter.delete', ['id' => $parameter->id]))
+                    ->withConfirm('Удалить параметр', 'Вы действительно хотите удалить параметр?', 'Да', method:'DELETE')
+                    ->error()
+            !!}
         </div>
     </x-moonshine::box>
 </div>
