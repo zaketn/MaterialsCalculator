@@ -38,23 +38,28 @@ class MaterialTypeResource extends ModelResource
                     ->asRelation(new MaterialResource())
                     ->fields([
                         ID::make(),
-                        Text::make('Название', 'name'),
+                        Text::make('Название', 'name')->required(),
                         Select::make('Единица измерения', 'unit')
                             ->options([
                                 'kg' => 'кг.'
-                            ]),
-                        Number::make('Цена','price')
+                            ])
+                            ->required(),
+                        Number::make('Цена', 'price')
                             ->buttons()
-                            ->step(0.1),
-                        Number::make('В наличии','in_stock')
-                            ->buttons(),
+                            ->step(0.1)
+                            ->required(),
+                        Number::make('В наличии', 'in_stock')
+                            ->buttons()
+                            ->required(),
                         Number::make('Зарезервировано', 'reserved')
-                            ->buttons(),
+                            ->buttons()
+                            ->required(),
                         Number::make('Списано', 'shipped')
-                            ->buttons(),
+                            ->buttons()
+                            ->required(),
                     ])
-                ->removable()
-                ->hideOnIndex()
+                    ->removable()
+                    ->hideOnIndex()
             ]),
         ];
     }
