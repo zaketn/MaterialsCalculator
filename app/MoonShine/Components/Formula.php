@@ -8,6 +8,7 @@ use App\Models\Component;
 use App\Models\Parameter;
 use App\Models\Product;
 use Illuminate\Database\Eloquent\Collection;
+use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Components\MoonShineComponent;
 
 /**
@@ -36,7 +37,13 @@ final class Formula extends MoonShineComponent
         return [
             'parameters' => $this->parameters,
             'parameter' => $this->parameter,
-            'characteristics' => $this->product->characteristics
+            'characteristics' => $this->product->characteristics,
+            'actionButtons' => [
+                'deleteParameter' => ActionButton::make('Удалить параметр', route('parameter.delete', ['id' => $this->parameter->id]))
+                    ->withConfirm('Удалить параметр', 'Вы действительно хотите удалить параметр?', 'Да', method: 'DELETE')
+                    ->error()
+                    ->render(),
+            ]
         ];
     }
 }
