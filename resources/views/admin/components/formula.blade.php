@@ -44,7 +44,7 @@
                         value="sqrt">
                     Корень
                 </button>
-                <button @click.prevent="showOperationInput('pow', 'Ввод переключен в режим вычисления степени.')"
+                <button @click.prevent="showOperationInput('pow', 'Ввод переключен в режим вычисления квадрата числа.')"
                         class="btn"
                         value="pow">
                     Квадрат
@@ -127,6 +127,7 @@
             operationInputs: [],
             isOperationBoxVisible: false,
             operationInputTitle: '',
+            operationInputType: '',
 
             predefinedButtons: [
                 {
@@ -164,7 +165,7 @@
                             value: '-'
                         },
                         {
-                            inner: '*',
+                            inner: '×',
                             value: '*'
                         },
                         {
@@ -224,9 +225,39 @@
             showOperationInput(type, title) {
                 this.isOperationBoxVisible = true
                 this.operationInputTitle = title
+                this.operationInputType = type
             },
 
             saveOperationInput() {
+                if(this.operationInputType === 'sqrt') {
+                    this.operationInputs.unshift({
+                        slug: '(',
+                        inner: '('
+                    })
+
+                    this.operationInputs.unshift({
+                        slug: 'sqrt',
+                        inner: '√'
+                    })
+
+                    this.operationInputs.push({
+                        slug: ')',
+                        inner: ')'
+                    })
+                } else if(this.operationInputType === 'pow') {
+                    this.operationInputs.unshift({
+                        slug: 'pow(',
+                        inner: '('
+                    })
+
+                    this.operationInputs.push({
+                        slug: ', 2)',
+                        inner: ')²'
+                    })
+                }
+
+                console.log(this.operationInputs)
+
                 this.inputs = this.inputs.concat(this.operationInputs)
 
                 this.operationInputs = []
