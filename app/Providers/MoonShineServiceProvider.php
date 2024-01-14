@@ -42,6 +42,9 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
     protected function menu(): array
     {
         return [
+            MenuItem::make('На сайт', fn() => route('index'))
+                ->icon('heroicons.arrow-left'),
+
             MenuItem::make('Продукты', new ProductResource())
                 ->icon('heroicons.shopping-cart'),
 

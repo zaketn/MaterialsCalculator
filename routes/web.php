@@ -3,4 +3,4 @@
 use App\Livewire\Calculator;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', Calculator::class);
+Route::get('/', Calculator::class)->name('index');
