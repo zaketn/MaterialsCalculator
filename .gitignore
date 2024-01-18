@@ -18,3 +18,5 @@ yarn-error.log
 /.idea
 /.vscode
 public_html
+/app/Services/Bitrix24/logs/*
+/app/Services/Bitrix24/*.json

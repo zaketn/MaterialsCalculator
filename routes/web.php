@@ -10,7 +10,8 @@ Route::get('/', Calculator::class)
 
 Route::post('/', Calculator::class)
     ->withoutMiddleware(VerifyCsrfToken::class)
-    ->name('index');
+    ->name('index.post');
 
 Route::post('/bitrix-install', Bitrix24Controller::class)
+    ->withoutMiddleware(VerifyCsrfToken::class)
     ->name('bitrix.install');

@@ -16,3 +16,15 @@
 5. `docker compose exec php sh` - войти в php контейнер
 6. `php artisan key:generate`
 7. `exit` - выйти из php контейнера
+
+## Интеграция с Bitrix24
+Проверить в .env, что установлен правильный `APP_URL`
+
+1. Перейти на вкладку создания локального приложения
+2. В путь обработчика добавить https://example.com
+3. В путь первоначальной установки добавить https://example.com/bitrix-install
+4. Выдать разрешения на CRM и placement
+5. Сохранить приложение, получить `client_id` и `client_secret`
+6. В .env заполнить `C_REST_CLIENT_ID`, `C_REST_CLIENT_SECRET`
+7. Переустановить приложение
+8. Готово, проверить наличие вкладки "Калькулятор" в сделке
