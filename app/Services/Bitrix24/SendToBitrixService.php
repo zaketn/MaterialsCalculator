@@ -57,6 +57,7 @@ class SendToBitrixService
         foreach ($products['result'] as $product) {
             if ($product['NAME'] === $this->productTitle) {
                 $this->bitrixProductId = $product['ID'];
+
                 return true;
             }
         }
@@ -79,7 +80,11 @@ class SendToBitrixService
             'fields' => $productData
         ]);
 
-        if (empty($response['result'])) return false;
+        if (empty($response['result'])) {
+            Log::debug($response);
+
+            return false;
+        }
 
         $this->bitrixProductId = $response['result'];
 
@@ -91,7 +96,10 @@ class SendToBitrixService
         $currentProducts = CRest::call('crm.deal.productrows.get', [
             'id' => $this->bitrixDealId,
         ]);
+
         if(!isset($currentProducts['result'])){
+            Log::debug($currentProducts);
+
             return false;
         }
         $currentProducts = $currentProducts['result'];
@@ -107,7 +115,13 @@ class SendToBitrixService
             'rows' => $currentProducts
         ]);
 
-        return isset($response['result']) && $response['result'] === true;
+        if(!isset($response['result']) && $response['result'] !== true) {
+            Log::debug($response);
+
+            return false;
+        }
+
+        return true;
     }
 
     public function createComment(): bool
@@ -127,6 +141,12 @@ class SendToBitrixService
             ]
         ]);
 
-        return isset($response['result']);
+        if(!isset($response['result'])) {
+            Log::debug($response);
+
+            return false;
+        }
+
+        return true;
     }
 }

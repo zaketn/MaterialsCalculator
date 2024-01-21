@@ -31,6 +31,7 @@ class Calculator extends Component
     public array $calculated;
 
     public ?string $bitrixDealId;
+    public array $bitrixSendStatus;
 
     public function __construct()
     {
@@ -48,6 +49,8 @@ class Calculator extends Component
         if (empty($selectedProductId)) {
             unset($this->selectedProduct);
             unset($this->variations);
+            unset($this->calculated);
+            unset($this->bitrixSendStatus);
             $this->userInputs = [];
 
             return;
@@ -88,6 +91,7 @@ class Calculator extends Component
         unset($this->selectedProduct);
         unset($this->variations);
         unset($this->calculated);
+        unset($this->bitrixSendStatus);
         $this->userInputs = [];
     }
 
@@ -100,15 +104,37 @@ class Calculator extends Component
             $this->calculated,
         );
 
+        unset($this->bitrixSendStatus);
+        $errorStatus = [
+            'class' => 'text-red-600',
+            'text' => 'Ошибка при отправке в bitrix.'
+        ];
+
         if(!$bitrixService->checkIfProductExists()){
             $isProductCreated = $bitrixService->createProduct();
-            if(!$isProductCreated) return;
+            if(!$isProductCreated){
+                $this->bitrixSendStatus = $errorStatus;
+                return;
+            }
         }
 
         $isProductAttached = $bitrixService->attachProductToDeal();
-        if(!$isProductAttached) return;
+        if(!$isProductAttached){
+            $this->bitrixSendStatus = $errorStatus;
+            return;
+        }
 
-        $bitrixService->createComment();
+        $isCommentAttached = $bitrixService->createComment();
+
+        if(!$isCommentAttached) {
+            $this->bitrixSendStatus = $errorStatus;
+            return;
+        }
+
+        $this->bitrixSendStatus = [
+            'class' => 'text-green-500',
+            'text' => 'Успех! Товар прикреплен к сделке, оставлен комментарий с подробностями.'
+        ];
     }
 
     private function loadVariationDependencies(int $selectedVariationId): void
