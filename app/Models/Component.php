@@ -16,9 +16,9 @@ class Component extends Model
     {
         static::created(function(Component $component) {
             Parameter::query()->create([
-                'name' => 'Итоговая стоимость',
+                'name' => Parameter::SUMMARY_PARAMETER_NAME,
                 'component_id' => $component->id,
-                'slug' => Str::slug('Итоговая стоимость'),
+                'slug' => Str::slug(Parameter::SUMMARY_PARAMETER_NAME),
                 'formula' => json_encode([])
             ]);
         });

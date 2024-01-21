@@ -7,6 +7,7 @@ use App\Actions\Calculator\GetInputFormulaComponentsAction;
 use App\Actions\Calculator\GetInputsFromCharacteristicsAction;
 use App\Models\Product;
 use App\Models\Variation;
+use App\Services\Bitrix24\SendToBitrixService;
 use App\Services\Calculator\CalculateService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -29,15 +30,22 @@ class Calculator extends Component
     public array $formulas;
     public array $calculated;
 
+    public ?string $bitrixDealId;
+
     public function __construct()
     {
         $this->products = Product::all();
         $this->parameters = collect();
+
+        if (isset($_REQUEST['PLACEMENT_OPTIONS'])) {
+            $placementOptions = json_decode($_REQUEST['PLACEMENT_OPTIONS'], true);
+            $this->bitrixDealId = $placementOptions['ID'] ?? null;
+        }
     }
 
     public function updatedSelectedProductId(?int $selectedProductId): void
     {
-        if(empty($selectedProductId)) {
+        if (empty($selectedProductId)) {
             unset($this->selectedProduct);
             unset($this->variations);
             $this->userInputs = [];
@@ -56,7 +64,7 @@ class Calculator extends Component
 
     public function updatedSelectedVariationId(?int $selectedVariationId): void
     {
-        if(empty($selectedVariationId)) {
+        if (empty($selectedVariationId)) {
             $this->userInputs = [];
 
             return;
@@ -68,19 +76,39 @@ class Calculator extends Component
 
     public function calculate(): void
     {
-        foreach($this->formulas as $formulaName => $formula) {
+        foreach ($this->formulas as $formulaName => $formula) {
             $calculateService = new CalculateService($this->userInputs, $formula);
 
             $this->calculated[$formulaName] = $calculateService->calculate();
         }
     }
 
-    public function clearAll() : void
+    public function clearAll(): void
     {
         unset($this->selectedProduct);
         unset($this->variations);
         unset($this->calculated);
         $this->userInputs = [];
+    }
+
+    public function sendToBitrix() : void
+    {
+        $bitrixService = new SendToBitrixService(
+            $this->bitrixDealId,
+            $this->selectedProduct->name,
+            $this->selectedVariation->name,
+            $this->calculated,
+        );
+
+        if(!$bitrixService->checkIfProductExists()){
+            $isProductCreated = $bitrixService->createProduct();
+            if(!$isProductCreated) return;
+        }
+
+        $isProductAttached = $bitrixService->attachProductToDeal();
+        if(!$isProductAttached) return;
+
+        $bitrixService->createComment();
     }
 
     private function loadVariationDependencies(int $selectedVariationId): void

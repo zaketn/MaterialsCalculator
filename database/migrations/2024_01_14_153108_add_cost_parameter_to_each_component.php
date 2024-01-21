@@ -10,15 +10,15 @@ return new class extends Migration {
     public function up(): void
     {
         $componentWithoutPrice = Component::query()->whereDoesntHave('parameters', function (Builder $query) {
-            $query->where('name', 'Итоговая стоимость');
+            $query->where('name', Parameter::SUMMARY_PARAMETER_NAME);
         })
             ->get();
 
         foreach ($componentWithoutPrice as $component) {
             Parameter::query()->create([
-                'name' => 'Итоговая стоимость',
+                'name' => Parameter::SUMMARY_PARAMETER_NAME,
                 'component_id' => $component->id,
-                'slug' => Str::slug('Итоговая стоимость'),
+                'slug' => Str::slug(Parameter::SUMMARY_PARAMETER_NAME),
                 'formula' => json_encode([])
             ]);
         }
@@ -27,7 +27,7 @@ return new class extends Migration {
     public function down(): void
     {
         Parameter::query()->has('component')
-            ->where('name', 'Итоговая стоимость')
+            ->where('name', Parameter::SUMMARY_PARAMETER_NAME)
             ->delete();
     }
 };
