@@ -127,11 +127,16 @@ class SendToBitrixService
     public function createComment(): bool
     {
         $parameterNameValue = "Продукт: $this->productName\nВариация: $this->variationName\n";
-        foreach ($this->parameters as $components) {
+        foreach ($this->parameters as $name => $components) {
+            if($name === Component::SUMMARY_COMPONENT_NAME) continue;
             foreach ($components as $parameterKey => $parameterValue) {
                 $parameterNameValue .= "$parameterKey - $parameterValue\n";
             }
         }
+
+        $summaryName = Component::SUMMARY_COMPONENT_NAME;
+        $summaryValue = $this->parameters[Component::SUMMARY_COMPONENT_NAME] ?? 'Не задана формула.';
+        $parameterNameValue .= "\n$summaryName - $summaryValue";
 
         $response = CRest::call('crm.timeline.comment.add', [
             'fields' => [
