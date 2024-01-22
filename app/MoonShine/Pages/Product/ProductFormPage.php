@@ -104,6 +104,7 @@ class ProductFormPage extends FormPage
 
                     return $product;
                 })
+            ->removable()
         ]);
 
         return $fields;
