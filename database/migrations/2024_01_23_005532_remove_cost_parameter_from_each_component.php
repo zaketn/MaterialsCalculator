@@ -9,6 +9,13 @@ use Illuminate\Support\Str;
 return new class extends Migration {
     public function up(): void
     {
+        Parameter::query()->has('component')
+            ->where('name', 'Итоговая стоимость')
+            ->delete();
+    }
+
+    public function down(): void
+    {
         $componentWithoutPrice = Component::query()->whereDoesntHave('parameters', function (Builder $query) {
             $query->where('name', 'Итоговая стоимость');
         })
@@ -22,12 +29,5 @@ return new class extends Migration {
                 'formula' => json_encode([])
             ]);
         }
-    }
-
-    public function down(): void
-    {
-        Parameter::query()->has('component')
-            ->where('name', 'Итоговая стоимость')
-            ->delete();
     }
 };

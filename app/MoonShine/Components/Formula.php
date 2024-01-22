@@ -21,6 +21,7 @@ final class Formula extends MoonShineComponent
 
     /**
      * @param Component $component
+     * @param Collection $parameters
      * @param Parameter $parameter
      */
     public function __construct(
@@ -34,7 +35,7 @@ final class Formula extends MoonShineComponent
 
     protected function viewData(): array
     {
-        return [
+        $viewData = [
             'parameters' => $this->parameters,
             'parameter' => $this->parameter,
             'characteristics' => $this->product->characteristics,
@@ -43,7 +44,14 @@ final class Formula extends MoonShineComponent
                     ->withConfirm('Удалить параметр', 'Вы действительно хотите удалить параметр?', 'Да', method: 'DELETE')
                     ->error()
                     ->render(),
-            ]
+            ],
+            'isSummary' => $this->component->is_summary
         ];
+
+        if($this->component->is_summary) {
+            $viewData['allComponents'] = $this->component->variation->components()->with('parameters')->get();
+        }
+
+        return $viewData;
     }
 }

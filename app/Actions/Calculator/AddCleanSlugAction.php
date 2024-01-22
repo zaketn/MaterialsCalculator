@@ -21,15 +21,16 @@ class AddCleanSlugAction
         )
             ->toArray();
 
-//        dd($parameters);
-
         foreach ($parameters as $parameterName => $formula) {
             foreach ($formula as $formulaName => $formulaItem) {
                 foreach($formulaItem as $i => $formulaValue) {
                     $isParameterValue = preg_match('/^\[.*]$/', $formulaValue['slug'], $foundedInputSlug);
                     $isCalculatedValue = preg_match('/^\{.*}$/', $formulaValue['slug'], $foundedCalculatedSlug);
 
-                    if (!$isParameterValue && !$isCalculatedValue) {
+                    if(isset($formulaValue['parent'])) {
+                        $parameters[$parameterName][$formulaName][$i]['clean_slug'] = trim($foundedInputSlug[0], '[]');
+                        $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::FROM_PARENT->name;
+                    } else if (!$isParameterValue && !$isCalculatedValue) {
                         $parameters[$parameterName][$formulaName][$i]['value'] = $formulaValue['slug'];
                         $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::SIMPLE->name;
                     } else {

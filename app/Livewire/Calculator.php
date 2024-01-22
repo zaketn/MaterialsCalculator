@@ -80,10 +80,19 @@ class Calculator extends Component
     public function calculate(): void
     {
         foreach ($this->formulas as $formulaName => $formula) {
+            if($formulaName === \App\Models\Component::SUMMARY_COMPONENT_NAME) continue;
+
             $calculateService = new CalculateService($this->userInputs, $formula);
 
             $this->calculated[$formulaName] = $calculateService->calculate();
         }
+
+        $calculateService = new CalculateService(
+            $this->userInputs,
+            $this->formulas[\App\Models\Component::SUMMARY_COMPONENT_NAME]
+        );
+
+        $this->calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME] = $calculateService->calculateSummary($this->calculated);
     }
 
     public function clearAll(): void

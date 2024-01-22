@@ -2,7 +2,7 @@
 
 namespace App\Services\Bitrix24;
 
-use App\Models\Parameter;
+use App\Models\Component;
 use Illuminate\Support\Facades\Log;
 
 class SendToBitrixService
@@ -29,16 +29,16 @@ class SendToBitrixService
     private function init(): string
     {
         $parameterNameValue = '';
-        foreach ($this->parameters as $components) {
+        foreach ($this->parameters as $name => $components) {
+            if ($name === Component::SUMMARY_COMPONENT_NAME) continue;
+
             foreach ($components as $parameterKey => $parameterValue) {
-                if ($parameterKey === Parameter::SUMMARY_PARAMETER_NAME) {
-                    $this->summaryPrice = (int)$parameterValue;
-                } else {
-                    $parameterNameValue .= mb_strtolower($parameterKey) . " - $parameterValue, ";
-                }
+                $parameterNameValue .= mb_strtolower($parameterKey) . " - $parameterValue, ";
             }
         }
         $parameterNameValue = trim($parameterNameValue, ", ");
+
+        $this->summaryPrice = (int)$this->parameters[Component::SUMMARY_COMPONENT_NAME];
 
         return "$this->productName $this->variationName($parameterNameValue)";
     }
@@ -97,7 +97,7 @@ class SendToBitrixService
             'id' => $this->bitrixDealId,
         ]);
 
-        if(!isset($currentProducts['result'])){
+        if (!isset($currentProducts['result'])) {
             Log::debug($currentProducts);
 
             return false;
@@ -115,7 +115,7 @@ class SendToBitrixService
             'rows' => $currentProducts
         ]);
 
-        if(!isset($response['result']) && $response['result'] !== true) {
+        if (!isset($response['result']) && $response['result'] !== true) {
             Log::debug($response);
 
             return false;
@@ -141,7 +141,7 @@ class SendToBitrixService
             ]
         ]);
 
-        if(!isset($response['result'])) {
+        if (!isset($response['result'])) {
             Log::debug($response);
 
             return false;

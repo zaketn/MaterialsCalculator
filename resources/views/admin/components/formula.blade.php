@@ -2,6 +2,20 @@
      class="mt-3"
      xmlns:x-moonshine="http://www.w3.org/1999/html">
     <div class="flex flex-col gap-2 mb-6">
+        @if($isSummary)
+            @foreach($allComponents as $component)
+                @continue($component->is_summary)
+                <p>{{ $component->name }}</p>
+                <div class="flex flex-wrap gap-2 mt-2">
+                    @foreach($component->parameters as $neighbourParameter)
+                        <button @click.prevent="addInput"
+                                value="{{ "[$neighbourParameter[slug]]" }}"
+                                class="btn btn-warning"
+                                data-parent="{{ $component->name }}">{{ $neighbourParameter['name'] }}</button>
+                    @endforeach
+                </div>
+            @endforeach
+        @endif
         @if(!empty($characteristics))
             <div class="btn-group mt-3">
                 <p>Вводные параметры</p>
@@ -90,8 +104,14 @@
             <template x-for="(inputValue, index) of inputs" x-if="inputs.length > 0" :key="index">
                 <template x-if="inputValue">
                     <div class="flex expression-input">
-                        <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug"
-                                x-text="inputValue.inner" style="margin-bottom: 0"></button>
+                        <template x-if="inputValue.parent">
+                            <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug"
+                                    x-text="inputValue.inner + ' (' + inputValue.parent + ')'" style="margin-bottom: 0"></button>
+                        </template>
+                        <template x-if="!inputValue.parent">
+                            <button @click.prevent="" type="text" class="btn btn-primary" :value="inputValue.slug"
+                                    x-text="inputValue.inner" style="margin-bottom: 0"></button>
+                        </template>
                     </div>
                 </template>
             </template>
@@ -112,11 +132,13 @@
         </div>
     </x-moonshine::box>
 
-    <x-moonshine::box class="mt-3">
-        <div class="flex flex-wrap gap-2 expression-inputs">
-            {!! $actionButtons['deleteParameter'] !!}
-        </div>
-    </x-moonshine::box>
+    @if(!$isSummary)
+        <x-moonshine::box class="mt-3">
+            <div class="flex flex-wrap gap-2 expression-inputs">
+                {!! $actionButtons['deleteParameter'] !!}
+            </div>
+        </x-moonshine::box>
+    @endif
 </div>
 
 <script>
@@ -187,10 +209,12 @@
             addInput(e) {
                 const slug = e.target.value
                 const inner = e.target.innerHTML ?? e.target.value
+                const parent = e.target.dataset.parent ?? null
 
                 const objectToPush = {
                     slug: slug,
-                    inner: inner
+                    inner: inner,
+                    parent: parent ?? null
                 }
 
                 if(this.isOperationBoxVisible) {
@@ -255,8 +279,6 @@
                         inner: ')²'
                     })
                 }
-
-                console.log(this.operationInputs)
 
                 this.inputs = this.inputs.concat(this.operationInputs)
 

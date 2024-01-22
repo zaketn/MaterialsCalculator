@@ -3,6 +3,8 @@
 namespace App\Services\Calculator;
 
 use App\Enums\Calculator\FormulaComponentType;
+use App\Models\Parameter;
+use Illuminate\Support\Str;
 
 class CalculateService
 {
@@ -20,6 +22,27 @@ class CalculateService
         return $this->calculateParameters();
     }
 
+    public function calculateSummary(array $calculated): float
+    {
+        $this->fillFormulaValues();
+        $this->fillFromParentValues($calculated);
+
+        return $this->calculateParameter($this->formulas[Parameter::SUMMARY_PARAMETER_NAME]);
+    }
+
+    private function fillFromParentValues(array $calculated)
+    {
+        foreach($this->formulas[Parameter::SUMMARY_PARAMETER_NAME] as $i => $formula) {
+            foreach($calculated as $component => $calculatedParameter) {
+                foreach($calculatedParameter as $parameterName => $parameterValue) {
+                    if($formula['type'] === FormulaComponentType::FROM_PARENT->name && $formula['parent'] === $component && $formula['clean_slug'] === Str::slug($parameterName)) {
+                        $this->formulas[Parameter::SUMMARY_PARAMETER_NAME][$i]['value'] = $parameterValue;
+                    }
+                }
+            }
+        }
+    }
+
     private function fillFormulaValues(): void
     {
         foreach ($this->userInputs as $userInput) {
@@ -33,9 +56,9 @@ class CalculateService
         }
     }
 
-    private function calculateParameters() : array
+    private function calculateParameters(): array
     {
-        if($this->isCalculatingFinished()) return $this->formulas;
+        if ($this->isCalculatingFinished()) return $this->formulas;
 
         foreach ($this->formulas as $parameterName => $parameter) {
             if (is_array($parameter) && $this->isParameterSimple($parameter)) {
@@ -57,7 +80,7 @@ class CalculateService
 
     private function isParameterSimple(array|int|float $parameter): bool
     {
-        if(!is_array($parameter)) return true;
+        if (!is_array($parameter)) return true;
 
         foreach ($parameter as $parameterComponent) {
             if ($parameterComponent['type'] === FormulaComponentType::CALCULATED->name && !isset($parameterComponent['value']))
@@ -89,10 +112,10 @@ class CalculateService
         return false;
     }
 
-    private function isCalculatingFinished() : bool
+    private function isCalculatingFinished(): bool
     {
         foreach ($this->formulas as $parameter) {
-            if(is_array($parameter)) return false;
+            if (is_array($parameter)) return false;
         }
 
         return true;

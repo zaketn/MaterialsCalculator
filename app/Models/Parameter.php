@@ -10,7 +10,7 @@ class Parameter extends Model
 {
     use HasFactory;
 
-    const SUMMARY_PARAMETER_NAME = 'Итоговая стоимость';
+    const SUMMARY_PARAMETER_NAME = 'Формула';
 
     protected $fillable = [
         'name',

@@ -65,7 +65,6 @@ class VariationFormPage extends FormPage
             Block::make([
                 Text::make('Название', 'name'),
 
-                // TODO: заблокировать возможность выбора
                 BelongsTo::make(
                     'Продукт',
                     'product',
@@ -96,6 +95,7 @@ class VariationFormPage extends FormPage
                     EditButton::for(new ComponentResource()),
 
                     DeleteButton::for(new ComponentResource())
+                        ->canSee(fn($component) => !$component->is_summary)
                 ])
                 ->withNotFound();
         }

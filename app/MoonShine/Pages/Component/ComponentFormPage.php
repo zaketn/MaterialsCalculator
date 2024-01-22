@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\MoonShine\Pages\Component;
 
 use App\Models\Component;
+use App\Models\Parameter;
 use App\Models\Variation;
 use App\MoonShine\Components\Formula;
 use App\MoonShine\Resources\ProductResource;
@@ -65,7 +66,7 @@ class ComponentFormPage extends FormPage
                     )
                         ->action(route('component.store'))
                 )
-                ->canSee(fn() => !empty($this->getResource()->getItem())),
+                ->canSee(fn() => !empty($this->getResource()->getItem()) && !$this->getResource()->getItem()->is_summary),
 
             Divider::make()
         ];
@@ -74,7 +75,9 @@ class ComponentFormPage extends FormPage
             foreach ($this->getResource()->getItem()->parameters as $parameter) {
                 $fields[] = Collapse::make($parameter->name, [
                     Text::make('Название параметра', $parameter->slug . '[name]')
-                        ->fill($parameter->name),
+                        ->fill($parameter->name)
+                        ->readonly(fn() => $this->getResource()->getItem()->is_summary)
+                        ->default(Parameter::SUMMARY_PARAMETER_NAME),
                     Formula::make(
                         $this->getResource()->getItem(),
                         $this->getResource()->getItem()->parameters,
