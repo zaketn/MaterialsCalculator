@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace App\MoonShine\Pages\Product;
 
 use App\Models\Material;
-use App\Models\Product;
 use App\Models\Variation;
+use App\MoonShine\Resources\CharacteristicResource;
 use App\MoonShine\Resources\VariationResource;
-use Illuminate\Support\Str;
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Buttons\DeleteButton;
 use MoonShine\Buttons\EditButton;
@@ -16,7 +15,6 @@ use MoonShine\Components\TableBuilder;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Decorations\Block;
 use MoonShine\Decorations\Divider;
-use MoonShine\Fields\Field;
 use MoonShine\Fields\ID;
 use MoonShine\Fields\Json;
 use MoonShine\Fields\Position;
@@ -81,8 +79,9 @@ class ProductFormPage extends FormPage
 
         $fields[] = Block::make('Характеристики', [
             Json::make('', 'characteristics')
+                ->asRelation(new CharacteristicResource())
                 ->fields([
-                    Position::make(),
+                    ID::make(),
                     Text::make('Название', 'name'),
                     Select::make('Тип поля', 'type')
                         ->options([
@@ -94,40 +93,9 @@ class ProductFormPage extends FormPage
                             ]
                         ])
                 ])
-                ->onApply(function(Product $product, $value, Field $field){
-                    foreach($value as $i => $type){
-                        if(isset($type['name'])){
-                            $value[$i]['slug'] = Str::slug($type['name']);
-                        }
-                    }
-                    $product->characteristics = $value;
-
-                    return $product;
-                })
             ->removable()
         ]);
 
         return $fields;
-    }
-
-    protected function topLayer(): array
-    {
-        return [
-            ...parent::topLayer()
-        ];
-    }
-
-    protected function mainLayer(): array
-    {
-        return [
-            ...parent::mainLayer()
-        ];
-    }
-
-    protected function bottomLayer(): array
-    {
-        return [
-            ...parent::bottomLayer()
-        ];
     }
 }

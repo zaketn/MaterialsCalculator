@@ -12,15 +12,15 @@ class Product extends Model
 
     protected $fillable = [
         'name',
-        'characteristics'
-    ];
-
-    protected $casts = [
-        'characteristics' => 'array'
     ];
 
     public function variations(): HasMany
     {
         return $this->hasMany(Variation::class);
+    }
+
+    public function characteristics(): HasMany
+    {
+        return $this->hasMany(Characteristic::class);
     }
 }

@@ -7,21 +7,20 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Parameter extends Model
+class Characteristic extends Model
 {
     use HasFactory, HasSlug;
 
-    const SUMMARY_PARAMETER_NAME = 'Формула';
-
     protected $fillable = [
+        'id',
         'name',
-        'component_id',
+        'type',
         'slug',
-        'formula'
+        'product_id'
     ];
 
-    public function component(): BelongsTo
+    public function product(): BelongsTo
     {
-        return $this->belongsTo(Component::class);
+        return $this->belongsTo(Product::class);
     }
 }
