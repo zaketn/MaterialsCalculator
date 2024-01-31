@@ -157,8 +157,16 @@
                     class: 'btn btn-primary',
                     items: [
                         {
+                            inner: "2",
+                            value: "2",
+                        },
+                        {
                             inner: "3.14",
                             value: "3.14",
+                        },
+                        {
+                            inner: "7.85",
+                            value: "7.85",
                         },
                         {
                             inner: "10",
@@ -171,6 +179,10 @@
                         {
                             inner: "100 000",
                             value: "100000",
+                        },
+                        {
+                            inner: "1 000 000",
+                            value: "1000000",
                         }
                     ]
                 },

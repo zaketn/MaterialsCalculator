@@ -4,6 +4,7 @@ namespace App\Services\Calculator;
 
 use App\Enums\Calculator\FormulaComponentType;
 use App\Models\Parameter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class CalculateService
@@ -94,7 +95,10 @@ class CalculateService
     {
         $formula = '';
 
+        Log::debug(collect($parameter));
         foreach ($parameter as $formulaItem) {
+            Log::debug($formulaItem);
+
             $formula .= $formulaItem['value'];
         }
 
