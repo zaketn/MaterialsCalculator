@@ -108,7 +108,7 @@
 
                     @isset($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME])
                         <div class="mt-5">
-                            <p class="font-bold">{{ \App\Models\Component::SUMMARY_COMPONENT_NAME }} : {{ $calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME] }}</p>
+                            <p class="font-bold">{{ \App\Models\Component::SUMMARY_COMPONENT_NAME }} : {{ number_format($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME], 0, ',', '&nbsp;') }}</p>
                         </div>
                     @endisset
 

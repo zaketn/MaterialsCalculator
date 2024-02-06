@@ -5,7 +5,6 @@ namespace App\Services\Calculator;
 use App\Enums\Calculator\FormulaComponentType;
 use App\Models\Parameter;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Str;
 
 class CalculateService
 {
@@ -34,10 +33,21 @@ class CalculateService
     private function fillFromParentValues(array $calculated)
     {
         foreach($this->formulas[Parameter::SUMMARY_PARAMETER_NAME] as $i => $formula) {
+            Log::debug('inner');
+            Log::debug($formula);
+
             foreach($calculated as $component => $calculatedParameter) {
                 foreach($calculatedParameter as $parameterName => $parameterValue) {
-                    if($formula['type'] === FormulaComponentType::FROM_PARENT->name && $formula['parent'] === $component && $formula['clean_slug'] === Str::slug($parameterName)) {
+                    Log::debug('Component');
+                    Log::debug($component);
+
+                    Log::debug('Slug parameter name');
+                    Log::debug($parameterName);
+
+                    if($formula['type'] === FormulaComponentType::FROM_PARENT->name && $formula['parent'] === $component && $formula['inner'] === $parameterName) {
                         $this->formulas[Parameter::SUMMARY_PARAMETER_NAME][$i]['value'] = $parameterValue;
+                        Log::debug('Calculated!');
+                        Log::debug($this->formulas[Parameter::SUMMARY_PARAMETER_NAME][$i]);
                     }
                 }
             }
