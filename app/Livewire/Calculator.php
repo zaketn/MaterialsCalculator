@@ -12,6 +12,7 @@ use App\Services\Calculator\CalculateService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Component;
+use ReflectionClass;
 
 class Calculator extends Component
 {
@@ -47,11 +48,7 @@ class Calculator extends Component
     public function updatedSelectedProductId(?int $selectedProductId): void
     {
         if (empty($selectedProductId)) {
-            unset($this->selectedProduct);
-            unset($this->variations);
-            unset($this->calculated);
-            unset($this->bitrixSendStatus);
-            $this->userInputs = [];
+            $this->unsetFields(['products']);
 
             return;
         }
@@ -68,7 +65,7 @@ class Calculator extends Component
     public function updatedSelectedVariationId(?int $selectedVariationId): void
     {
         if (empty($selectedVariationId)) {
-            $this->userInputs = [];
+            $this->unsetFields(['products', 'selectedProduct', 'selectedProductId', 'variations']);
 
             return;
         }
@@ -79,6 +76,8 @@ class Calculator extends Component
 
     public function calculate(): void
     {
+        $this->calculated = [];
+
         foreach ($this->formulas as $formulaName => $formula) {
             if($formulaName === \App\Models\Component::SUMMARY_COMPONENT_NAME) continue;
 
@@ -95,13 +94,16 @@ class Calculator extends Component
         $this->calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME] = $calculateService->calculateSummary($this->calculated);
     }
 
+    /**
+     * Кнопка "Очистить"
+     *
+     * Очищает все значения компонента, кроме тех, которые нужны для его начальной работы
+     *
+     * @return void
+     */
     public function clearAll(): void
     {
-        unset($this->selectedProduct);
-        unset($this->variations);
-        unset($this->calculated);
-        unset($this->bitrixSendStatus);
-        $this->userInputs = [];
+        $this->unsetFields(['products']);
     }
 
     public function sendToBitrix() : void
@@ -189,5 +191,23 @@ class Calculator extends Component
         $separatedFormulaComponents = $addCleanSlugAction($this->parameters);
 
         $this->formulas = $separatedFormulaComponents;
+    }
+
+    private function unsetFields(array $exceptions) : void
+    {
+        $reflect = new ReflectionClass(self::class);
+        $props = $reflect->getProperties();
+
+        foreach ($props as $prop) {
+            if ($prop->class !== self::class || in_array($prop->getName(), $exceptions)) {
+                continue;
+            }
+
+            if($prop->getType()->getName() === 'array') {
+                $this->{$prop->getName()} = [];
+            } else {
+                unset($this->{$prop->getName()});
+            }
+        }
     }
 }

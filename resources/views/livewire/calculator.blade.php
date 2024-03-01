@@ -18,7 +18,7 @@
                                     value="{{ $product->id }}">{{ $product->name }}</option>
                         @endforeach
                     </select>
-                    @if($variations)
+                    @if(!empty($variations))
                         <button
                             wire:click="clearAll"
                             type="text"
@@ -28,7 +28,7 @@
                     @endif
                 </div>
 
-                @if($variations)
+                @if(!empty($variations))
                     <label for="countries"
                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                         Выберите вариацию
@@ -44,7 +44,7 @@
                     </select>
                 @endif
 
-                @if($userInputs)
+                @if(!empty($userInputs))
                     <form wire:submit="calculate">
                         @foreach($userInputs as $i => $userInput)
                             <div wire:key="{{ $userInput['slug'] }}">
@@ -90,7 +90,8 @@
                 @endif
             </div>
 
-            @if($calculated)
+            @if(!empty($calculated))
+
                 <div class="bg-gray-100 p-5 rounded">
                     @foreach($calculated as $parameterName => $calculatedParameter)
                         @continue($parameterName === \App\Models\Component::SUMMARY_COMPONENT_NAME)
@@ -106,11 +107,11 @@
                         </div>
                     @endforeach
 
-                    @isset($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME])
+                    @if(!empty($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME]))
                         <div class="mt-5">
                             <p class="font-bold">{{ \App\Models\Component::SUMMARY_COMPONENT_NAME }} : {{ number_format($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME], 0, ',', '&nbsp;') }}</p>
                         </div>
-                    @endisset
+                    @endif
 
                     <div class="flex gap-2 items-center">
                         @if($bitrixDealId)
