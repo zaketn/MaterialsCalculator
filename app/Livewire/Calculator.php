@@ -9,8 +9,10 @@ use App\Models\Product;
 use App\Models\Variation;
 use App\Services\Bitrix24\SendToBitrixService;
 use App\Services\Calculator\CalculateService;
+use App\Services\Calculator\CalculatorErrorService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use ReflectionClass;
 
@@ -29,7 +31,7 @@ class Calculator extends Component
 
     public array $userInputs;
     public array $formulas;
-    public array $calculated;
+    private array $calculated;
 
     public ?string $bitrixDealId;
     public array $bitrixSendStatus;
@@ -43,6 +45,18 @@ class Calculator extends Component
             $placementOptions = json_decode($_REQUEST['PLACEMENT_OPTIONS'], true);
             $this->bitrixDealId = $placementOptions['ID'] ?? null;
         }
+    }
+
+    #[Computed]
+    public function error() : ?string
+    {
+        return CalculatorErrorService::get();
+    }
+
+    #[Computed]
+    public function calculated() : array
+    {
+        return $this->calculated ?? [];
     }
 
     public function updatedSelectedProductId(?int $selectedProductId): void
@@ -76,6 +90,16 @@ class Calculator extends Component
 
     public function calculate(): void
     {
+        $this->unsetFields([
+            'products',
+            'selectedProduct',
+            'selectedProductId',
+            'selectedVariation',
+            'selectedVariationId',
+            'variations',
+            'userInputs',
+            'formulas'
+        ]);
         $this->calculated = [];
 
         foreach ($this->formulas as $formulaName => $formula) {
@@ -195,6 +219,8 @@ class Calculator extends Component
 
     private function unsetFields(array $exceptions) : void
     {
+        CalculatorErrorService::remove();
+
         $reflect = new ReflectionClass(self::class);
         $props = $reflect->getProperties();
 
@@ -203,11 +229,7 @@ class Calculator extends Component
                 continue;
             }
 
-            if($prop->getType()->getName() === 'array') {
-                $this->{$prop->getName()} = [];
-            } else {
-                unset($this->{$prop->getName()});
-            }
+            $this->reset($prop->getName());
         }
     }
 }

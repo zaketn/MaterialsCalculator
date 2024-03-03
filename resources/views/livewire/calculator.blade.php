@@ -47,7 +47,7 @@
                 @if(!empty($userInputs))
                     <form wire:submit="calculate">
                         @foreach($userInputs as $i => $userInput)
-                            <div wire:key="{{ $userInput['slug'] }}">
+                            <div wire:key="{{ $userInput['slug'] }}_{{ rand(PHP_INT_MIN, PHP_INT_MAX) }}">
                                 @if(class_exists($userInput['type']))
                                     <label for="{{ $userInput['slug'] }}"
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
@@ -90,10 +90,14 @@
                 @endif
             </div>
 
-            @if(!empty($calculated))
-
+            @if(!empty($this->error))
                 <div class="bg-gray-100 p-5 rounded">
-                    @foreach($calculated as $parameterName => $calculatedParameter)
+                    <p class="font-bold">Ошибка!</p>
+                    <p class="text-red-500">{{ $this->error }}</p>
+                </div>
+            @elseif(!empty($this->calculated))
+                <div class="bg-gray-100 p-5 rounded">
+                    @foreach($this->calculated as $parameterName => $calculatedParameter)
                         @continue($parameterName === \App\Models\Component::SUMMARY_COMPONENT_NAME)
 
                         <div wire:key="{{ $parameterName }}_usual">
@@ -107,9 +111,9 @@
                         </div>
                     @endforeach
 
-                    @if(!empty($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME]))
+                    @if(!empty($this->calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME]))
                         <div class="mt-5">
-                            <p class="font-bold">{{ \App\Models\Component::SUMMARY_COMPONENT_NAME }} : {{ number_format($calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME], 0, ',', '&nbsp;') }}</p>
+                            <p class="font-bold">{{ \App\Models\Component::SUMMARY_COMPONENT_NAME }} : {{ number_format($this->calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME], 0, ',', '&nbsp;') }}</p>
                         </div>
                     @endif
 

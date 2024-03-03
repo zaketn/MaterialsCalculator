@@ -2,12 +2,16 @@
 
 namespace App\Services\Calculator;
 
+use App\Enums\Calculator\CalculateError;
 use App\Enums\Calculator\FormulaComponentType;
 use App\Models\Parameter;
+use Closure;
 use Illuminate\Support\Facades\Log;
 
 class CalculateService
 {
+    private string $context = '';
+
     public function __construct(
         private readonly array $userInputs,
         private array          $formulas,
@@ -17,34 +21,62 @@ class CalculateService
 
     public function calculate(): array
     {
-        $this->fillFormulaValues();
+        return $this->exec(function () {
+            $this->fillFormulaValues();
 
-        return $this->calculateParameters();
+            return $this->calculateParameters();
+        }, []);
     }
 
     public function calculateSummary(array $calculated): float
     {
-        $this->fillFormulaValues();
-        $this->fillFromParentValues($calculated);
+        return $this->exec(function () use ($calculated) {
+            $this->fillFormulaValues();
+            $this->fillFromParentValues($calculated);
 
-        return $this->calculateParameter($this->formulas[Parameter::SUMMARY_PARAMETER_NAME]);
+            return $this->calculateParameter($this->formulas[Parameter::SUMMARY_PARAMETER_NAME]);
+        }, 0);
     }
 
-    private function fillFromParentValues(array $calculated)
+    private function exec(Closure $calculation, mixed $default = null): mixed
     {
-        foreach($this->formulas[Parameter::SUMMARY_PARAMETER_NAME] as $i => $formula) {
+        if ($default !== null) {
+            $result = $default;
+        }
+
+        try {
+            $result = $calculation();
+        } catch (\ErrorException) {
+            CalculateError::ERROR_EXCEPTION->set($this->context);
+        } catch (\DivisionByZeroError) {
+            CalculateError::DIVISION_BY_ZERO->set($this->context);
+        } catch (\ParseError) {
+            CalculateError::PARSE_ERROR->set($this->context);
+        } catch (\Exception $e) {
+            Log::debug($e);
+            CalculateError::UNDEFINED_EXCEPTION->set($this->context);
+        }
+
+        return $result;
+    }
+
+    private function fillFromParentValues(array $calculated): void
+    {
+        $this->context = 'Заполнение итоговых значений';
+
+        foreach ($this->formulas[Parameter::SUMMARY_PARAMETER_NAME] as $i => $formula) {
             Log::debug('inner');
             Log::debug($formula);
 
-            foreach($calculated as $component => $calculatedParameter) {
-                foreach($calculatedParameter as $parameterName => $parameterValue) {
+            foreach ($calculated as $component => $calculatedParameter) {
+                foreach ($calculatedParameter as $parameterName => $parameterValue) {
                     Log::debug('Component');
                     Log::debug($component);
 
                     Log::debug('Slug parameter name');
                     Log::debug($parameterName);
 
-                    if($formula['type'] === FormulaComponentType::FROM_PARENT->name && $formula['parent'] === $component && $formula['inner'] === $parameterName) {
+                    if ($formula['type'] === FormulaComponentType::FROM_PARENT->name && $formula['parent'] === $component && $formula['inner'] === $parameterName) {
                         $this->formulas[Parameter::SUMMARY_PARAMETER_NAME][$i]['value'] = $parameterValue;
                         Log::debug('Calculated!');
                         Log::debug($this->formulas[Parameter::SUMMARY_PARAMETER_NAME][$i]);
@@ -56,6 +88,8 @@ class CalculateService
 
     private function fillFormulaValues(): void
     {
+        $this->context = 'Заполнение значений';
+
         foreach ($this->userInputs as $userInput) {
             foreach ($this->formulas as $parameterName => $parameterFormulas) {
                 foreach ($parameterFormulas as $i => $formula) {
@@ -69,6 +103,8 @@ class CalculateService
 
     private function calculateParameters(): array
     {
+        $this->context = 'Вычисление отдельно взятого параметра';
+
         if ($this->isCalculatingFinished()) return $this->formulas;
 
         foreach ($this->formulas as $parameterName => $parameter) {
@@ -101,8 +137,9 @@ class CalculateService
         return true;
     }
 
-    private function calculateParameter(array $parameter)
+    private function calculateParameter(array $parameter): mixed
     {
+        $this->context = 'Составление итоговой формулы параметра/общей суммы';
         $formula = '';
 
         Log::debug(collect($parameter));
@@ -112,12 +149,13 @@ class CalculateService
             $formula .= $formulaItem['value'];
         }
 
+        $this->context = 'Вычисление итогового примера. Попробуйте проверить корректность формул.';
         $result = eval("return $formula;");
 
         return is_float($result) ? round($result, 2) : $result;
     }
 
-    private function isParameterCalculated(string $parameterName)
+    private function isParameterCalculated(string $parameterName): bool
     {
         foreach ($this->formulas as $name => $parameter) {
             if ($name === $parameterName && is_numeric($parameter)) return true;
