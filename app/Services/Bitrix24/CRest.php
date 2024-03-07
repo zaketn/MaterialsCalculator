@@ -284,9 +284,9 @@ class CRest
                 'this_auth' => 'Y',
                 'params' =>
                     [
-                        'client_id' => $arSettings['C_REST_CLIENT_ID'],
+                        'client_id' => config('crest.C_REST_CLIENT_ID'),
                         'grant_type' => 'refresh_token',
-                        'client_secret' => $arSettings['C_REST_CLIENT_SECRET'],
+                        'client_secret' => config('crest.C_REST_CLIENT_SECRET'),
                         'refresh_token' => $arSettings["refresh_token"],
                     ]
             ];
