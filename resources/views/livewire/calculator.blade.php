@@ -1,9 +1,8 @@
-<div class="container mx-auto">
-    <h1 class="text-3xl mb-4 font-semibold">Калькулятор материалов</h1>
+{{--<div class="container mx-auto">--}}
 
     <div class="container">
         <div class="grid grid-cols-3 gap-x-10">
-            <div class="col-span-2 bg-gray-100 p-5 rounded">
+            <div class="col-span-2 p-5 rounded">
                 <label for="countries"
                        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                     Выберите товар
@@ -96,7 +95,7 @@
                     <p class="text-red-500">{{ $this->error }}</p>
                 </div>
             @elseif(!empty($this->calculated))
-                <div class="bg-gray-100 p-5 rounded">
+                <div class="p-5 rounded">
                     @foreach($this->calculated as $parameterName => $calculatedParameter)
                         @continue($parameterName === \App\Models\Component::SUMMARY_COMPONENT_NAME)
 
@@ -133,4 +132,4 @@
             @endif
         </div>
     </div>
-</div>
+{{--</div>--}}
