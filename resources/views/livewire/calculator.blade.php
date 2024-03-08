@@ -90,12 +90,12 @@
             </div>
 
             @if(!empty($this->error))
-                <div class="bg-gray-100 p-5 rounded">
+                <div class="p-5 rounded">
                     <p class="font-bold">Ошибка!</p>
                     <p class="text-red-500">{{ $this->error }}</p>
                 </div>
             @elseif(!empty($this->calculated))
-                <div class="p-5 rounded">
+                <div class="p-5 rounded dark:text-white">
                     @foreach($this->calculated as $parameterName => $calculatedParameter)
                         @continue($parameterName === \App\Models\Component::SUMMARY_COMPONENT_NAME)
 
