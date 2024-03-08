@@ -8,6 +8,7 @@ use App\Models\Material;
 use App\Models\Variation;
 use App\MoonShine\Resources\CharacteristicResource;
 use App\MoonShine\Resources\VariationResource;
+use Illuminate\View\ComponentAttributeBag;
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Buttons\DeleteButton;
 use MoonShine\Buttons\EditButton;
@@ -63,6 +64,16 @@ class ProductFormPage extends FormPage
 
             $fields[] = Block::make('Вариации продукта', [
                 TableBuilder::make(items: $this->getResource()->getItem()->variations)
+                    ->trAttributes(
+                        // Если не заполнено поле для группировки то строка выделяется красным
+                        function(mixed $data, int $row, ComponentAttributeBag $attributes): ComponentAttributeBag {
+                            if($data->group_by === null) {
+                                return $attributes->merge(['class' => 'bgc-red']);
+                            }
+
+                            return $attributes;
+                        }
+                    )
                     ->fields([
                         Position::make(),
                         Text::make('Название', formatted: fn($item) => $item->name)
@@ -74,7 +85,7 @@ class ProductFormPage extends FormPage
                     ->cast(ModelCast::make(Variation::class))
                     ->withNotFound()
             ])
-                ->customAttributes(['style' => 'margin-bottom: 1rem']);;
+                ->customAttributes(['style' => 'margin-bottom: 1rem']);
         }
 
         $fields[] = Block::make('Характеристики', [

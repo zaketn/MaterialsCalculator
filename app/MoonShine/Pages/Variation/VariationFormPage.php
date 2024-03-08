@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace App\MoonShine\Pages\Variation;
 
 use App\Models\Component;
+use App\Models\Material;
 use App\Models\Product;
+use App\MoonShine\Resources\CharacteristicResource;
 use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\ProductResource;
+use Illuminate\Database\Eloquent\Builder;
 use MoonShine\ActionButtons\ActionButton;
 use MoonShine\Buttons\DeleteButton;
 use MoonShine\Buttons\EditButton;
@@ -70,7 +73,19 @@ class VariationFormPage extends FormPage
                     'product',
                     resource: new ProductResource()
                 )
-                    ->default($this->relatedProduct)
+                    ->default($this->relatedProduct),
+
+                BelongsTo::make(
+                    'Характеристика для группировки',
+                    'groupingCharacteristic',
+                    resource: new CharacteristicResource()
+                )
+                    ->valuesQuery(
+                        fn(Builder $query) => $query
+                            ->where('product_id', $this->getResource()->getItem()->product->id ?? $this->relatedProduct->id)
+                            ->where('type', Material::class)
+                    )
+                ->nullable(),
             ]),
         ];
 

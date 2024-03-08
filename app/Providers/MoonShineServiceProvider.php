@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Providers;
 
 use App\MoonShine\Pages\Component\ComponentFormPage;
+use App\MoonShine\Resources\CharacteristicResource;
 use App\MoonShine\Resources\ComponentResource;
 use App\MoonShine\Resources\MaterialResource;
 use App\MoonShine\Resources\MaterialTypeResource;
@@ -28,7 +29,8 @@ class MoonShineServiceProvider extends MoonShineApplicationServiceProvider
             new ComponentResource(),
             new ParameterResource(),
             new MaterialResource(),
-            new ServiceResource()
+            new ServiceResource(),
+            new CharacteristicResource()
         ];
     }
 

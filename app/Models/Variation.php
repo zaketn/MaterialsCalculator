@@ -33,7 +33,8 @@ class Variation extends Model
     protected $fillable = [
         'id',
         'name',
-        'product_id'
+        'product_id',
+        'group_by'
     ];
 
     public function product(): BelongsTo
@@ -44,5 +45,10 @@ class Variation extends Model
     public function components(): HasMany
     {
         return $this->hasMany(Component::class);
+    }
+
+    public function groupingCharacteristic() : BelongsTo
+    {
+        return $this->belongsTo(Characteristic::class, 'group_by', 'id');
     }
 }
