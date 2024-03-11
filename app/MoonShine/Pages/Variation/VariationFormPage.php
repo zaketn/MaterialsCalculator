@@ -17,8 +17,11 @@ use MoonShine\Buttons\EditButton;
 use MoonShine\Components\TableBuilder;
 use MoonShine\Contracts\Resources\ResourceContract;
 use MoonShine\Decorations\Block;
+use MoonShine\Decorations\Collapse;
 use MoonShine\Decorations\Divider;
+use MoonShine\Fields\Number;
 use MoonShine\Fields\Relationships\BelongsTo;
+use MoonShine\Fields\Relationships\BelongsToMany;
 use MoonShine\Fields\Text;
 use MoonShine\Pages\Crud\FormPage;
 use MoonShine\TypeCasts\ModelCast;
@@ -37,7 +40,7 @@ class VariationFormPage extends FormPage
 
         $relatedProductId = request()->get('relatedProductId');
         $this->relatedProduct = !empty($relatedProductId)
-            ? Product::query()->find((int)$relatedProductId)
+            ? Product::query()->find((int)$relatedProductId)->with('characteristics')
             : null;
     }
 
@@ -56,7 +59,7 @@ class VariationFormPage extends FormPage
             ]
             + [
                 $productResource->formPage()->route(['resourceItem' =>
-                    $this->relatedProduct->id ?? $this->getResource()->getItem()->product->id])=> $this->relatedProduct->name
+                    $this->relatedProduct->id ?? $this->getResource()->getItem()->product->id]) => $this->relatedProduct->name
                     ?? $this->getResource()->getItem()->product->name
             ]
             + $breadcrumbs;
@@ -68,24 +71,31 @@ class VariationFormPage extends FormPage
             Block::make([
                 Text::make('Название', 'name'),
 
-                BelongsTo::make(
-                    'Продукт',
-                    'product',
-                    resource: new ProductResource()
-                )
-                    ->default($this->relatedProduct),
-
-                BelongsTo::make(
-                    'Характеристика для группировки',
-                    'groupingCharacteristic',
-                    resource: new CharacteristicResource()
-                )
-                    ->valuesQuery(
-                        fn(Builder $query) => $query
-                            ->where('product_id', $this->getResource()->getItem()->product->id ?? $this->relatedProduct->id)
-                            ->where('type', Material::class)
+                Collapse::make('Настройки', [
+                    BelongsTo::make(
+                        'Продукт',
+                        'product',
+                        resource: new ProductResource()
                     )
-                ->nullable(),
+                        ->default($this->relatedProduct),
+
+                    BelongsToMany::make(
+                        'Характеристика для группировки',
+                        'characteristics',
+                        resource: new CharacteristicResource()
+                    )
+                        ->valuesQuery(
+                            fn(Builder $query) => $query
+                                ->where('product_id', $this->getResource()->getItem()->product->id ?? $this->relatedProduct->id)
+                        )
+                        ->fields([
+                            Number::make('Очередь группировки', 'group_order')
+                                ->min(1)
+                                ->max(10)
+                                ->step(1)
+                                ->buttons()
+                        ]),
+                ])
             ]),
         ];
 

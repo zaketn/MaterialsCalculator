@@ -65,9 +65,11 @@ class ProductFormPage extends FormPage
             $fields[] = Block::make('Вариации продукта', [
                 TableBuilder::make(items: $this->getResource()->getItem()->variations)
                     ->trAttributes(
-                        // Если не заполнено поле для группировки то строка выделяется красным
+                        // Если не заполнена группировка то строка выделяется красным
                         function(mixed $data, int $row, ComponentAttributeBag $attributes): ComponentAttributeBag {
-                            if($data->group_by === null) {
+                            $data->load('characteristics');
+
+                            if($data->characteristics->isEmpty()) {
                                 return $attributes->merge(['class' => 'bgc-red']);
                             }
 
