@@ -19,6 +19,11 @@ class CalculateService
     {
     }
 
+    /**
+     * Вычисление параметров
+     *
+     * @return array
+     */
     public function calculate(): array
     {
         return $this->exec(function () {
@@ -28,6 +33,12 @@ class CalculateService
         }, []);
     }
 
+    /**
+     * Вычисление поля "Итог", которое может содержать поля, из любого компонента
+     *
+     * @param array $calculated
+     * @return float
+     */
     public function calculateSummary(array $calculated): float
     {
         return $this->exec(function () use ($calculated) {
@@ -38,6 +49,13 @@ class CalculateService
         }, 0);
     }
 
+    /**
+     * Вспомогательная функция для отлова ошибок вычисления
+     *
+     * @param Closure $calculation
+     * @param mixed|null $default
+     * @return mixed
+     */
     private function exec(Closure $calculation, mixed $default = null): mixed
     {
         if ($default !== null) {
@@ -60,6 +78,12 @@ class CalculateService
         return $result;
     }
 
+    /**
+     * Берёт значения для расчёта поля "Итог", из уже расчитанных компонентов
+     *
+     * @param array $calculated
+     * @return void
+     */
     private function fillFromParentValues(array $calculated): void
     {
         $this->context = 'Заполнение итоговых значений';
@@ -86,6 +110,11 @@ class CalculateService
         }
     }
 
+    /**
+     * Заполняет параметры, вводимые пользователем
+     *
+     * @return void
+     */
     private function fillFormulaValues(): void
     {
         $this->context = 'Заполнение значений';
@@ -93,38 +122,95 @@ class CalculateService
         foreach ($this->userInputs as $userInput) {
             foreach ($this->formulas as $parameterName => $parameterFormulas) {
                 foreach ($parameterFormulas as $i => $formula) {
-                    if (isset($formula['clean_slug']) && $userInput['slug'] === $formula['clean_slug']) {
-                        $this->formulas[$parameterName][$i]['value'] = $userInput['value'];
-                    }
+                    if (!isset($formula['clean_slug']) || $userInput['slug'] !== $formula['clean_slug']) continue;
+
+                    $this->formulas[$parameterName][$i]['value'] = $userInput['value'];
                 }
             }
         }
     }
 
+    /**
+     * Расчёт параметров компонента
+     *
+     * @return array
+     */
     private function calculateParameters(): array
     {
-        $this->context = 'Вычисление отдельно взятого параметра';
+        $this->context = 'Вычисление отдельно взятого компонента';
 
         if ($this->isCalculatingFinished()) return $this->formulas;
 
-        foreach ($this->formulas as $parameterName => $parameter) {
-            if (is_array($parameter) && $this->isParameterSimple($parameter)) {
-                $this->formulas[$parameterName] = $this->calculateParameter($parameter);
-            } else if (!$this->isParameterSimple($parameter)) {
-                foreach ($parameter as $i => $parameterComponent) {
-                    if ($parameterComponent['type'] === FormulaComponentType::CALCULATED->name && !isset($parameterComponent['value'])) {
-                        if (is_array($this->formulas[$parameterName]) && $this->isParameterCalculated($parameterComponent['inner'])) {
-                            $this->formulas[$parameterName][$i]['value'] = $this->formulas[$parameterComponent['inner']];
-                        }
-                    }
-                }
-                $this->calculateParameters();
-            }
-        }
+        $this->calculateSimpleParameters();
+        $this->calculateComplexParameters();
+
+        $this->calculateParameters();
 
         return $this->formulas;
     }
 
+    /**
+     * Непосредственно математическое вычисление формул
+     *
+     * @param array $parameter
+     * @return mixed
+     */
+    private function calculateParameter(array $parameter): mixed
+    {
+        $this->context = 'Составление формулы компонента/общей суммы';
+        $formula = '';
+
+        Log::debug($parameter);
+        foreach ($parameter as $formulaItem) {
+            Log::debug($formulaItem);
+
+            $formula .= $formulaItem['value'];
+        }
+
+        $this->context = 'Вычисление отдельно взятого компонента. Попробуйте проверить корректность формул.';
+        $result = eval("return $formula;");
+
+        return is_float($result) ? round($result, 2) : $result;
+    }
+
+    /**
+     * Преобразование параметров, которые нельзя математически вычислить в данный момент
+     *
+     * @return void
+     */
+    private function calculateComplexParameters(): void
+    {
+        foreach ($this->formulas as $parameterName => $parameter) {
+            if ($this->isParameterSimple($parameter)) continue;
+
+            foreach ($parameter as $i => $parameterComponent) {
+                if (!$this->shouldProcess($parameterName, $parameterComponent)) continue;
+
+                $this->formulas[$parameterName][$i]['value'] = $this->formulas[$parameterComponent['inner']];
+            }
+        }
+    }
+
+    /**
+     * Вычисление параметров которые готовы к математическому вычислению
+     *
+     * @return void
+     */
+    private function calculateSimpleParameters(): void
+    {
+        foreach ($this->formulas as $parameterName => $parameter) {
+            if (!is_array($parameter) || !$this->isParameterSimple($parameter)) continue;
+
+            $this->formulas[$parameterName] = $this->calculateParameter($parameter);
+        }
+    }
+
+    /**
+     * Проверка параметра на возможность математического вычисления
+     *
+     * @param array|int|float $parameter
+     * @return bool
+     */
     private function isParameterSimple(array|int|float $parameter): bool
     {
         if (!is_array($parameter)) return true;
@@ -137,24 +223,32 @@ class CalculateService
         return true;
     }
 
-    private function calculateParameter(array $parameter): mixed
+    /**
+     * Проверка вычисляемого параметра на необходимость дальнейшей обработки в простой параметр
+     *
+     * @param string $parameterName
+     * @param array $parameterComponent
+     * @return bool
+     */
+    private function shouldProcess(string $parameterName, array $parameterComponent): bool
     {
-        $this->context = 'Составление итоговой формулы параметра/общей суммы';
-        $formula = '';
-
-        Log::debug(collect($parameter));
-        foreach ($parameter as $formulaItem) {
-            Log::debug($formulaItem);
-
-            $formula .= $formulaItem['value'];
+        if ($parameterComponent['type'] !== FormulaComponentType::CALCULATED->name || isset($parameterComponent['value'])) {
+            return false;
         }
 
-        $this->context = 'Вычисление итогового примера. Попробуйте проверить корректность формул.';
-        $result = eval("return $formula;");
+        if (!is_array($this->formulas[$parameterName]) || !$this->isParameterCalculated($parameterComponent['inner'])) {
+            return false;
+        }
 
-        return is_float($result) ? round($result, 2) : $result;
+        return true;
     }
 
+    /**
+     * Проверка на то, вычислен ли уже параметр
+     *
+     * @param string $parameterName
+     * @return bool
+     */
     private function isParameterCalculated(string $parameterName): bool
     {
         foreach ($this->formulas as $name => $parameter) {
@@ -164,6 +258,11 @@ class CalculateService
         return false;
     }
 
+    /**
+     * Проверка на то, что все расчёты окончены
+     *
+     * @return bool
+     */
     private function isCalculatingFinished(): bool
     {
         foreach ($this->formulas as $parameter) {
