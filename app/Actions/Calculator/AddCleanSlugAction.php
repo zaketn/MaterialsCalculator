@@ -17,31 +17,22 @@ class AddCleanSlugAction
     public function __invoke(Collection $parameters): array
     {
         $parameters = $parameters->map(
-            fn(Collection $parameter) => $parameter->map(fn(string $formula) => json_decode($formula, true))
+            fn(Collection $parameter) => $parameter->map(
+                fn(string $formula) => json_decode($formula, true)
+            )
         )
             ->toArray();
 
         foreach ($parameters as $parameterName => $formula) {
             foreach ($formula as $formulaName => $formulaItem) {
-                foreach($formulaItem as $i => $formulaValue) {
-                    $isParameterValue = preg_match('/^\[.*]$/', $formulaValue['slug'], $foundedInputSlug);
-                    $isCalculatedValue = preg_match('/^\{.*}$/', $formulaValue['slug'], $foundedCalculatedSlug);
+                foreach ($formulaItem as $i => $formulaValue) {
+                    $formulaType = FormulaComponentType::matchType($formulaValue);
+                    $parameters[$parameterName][$formulaName][$i]['type'] = $formulaType->name;
 
-                    if(isset($formulaValue['parent'])) {
-                        $parameters[$parameterName][$formulaName][$i]['clean_slug'] = trim($foundedInputSlug[0], '[]');
-                        $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::FROM_PARENT->name;
-                    } else if (!$isParameterValue && !$isCalculatedValue) {
+                    if ($formulaType === FormulaComponentType::SIMPLE) {
                         $parameters[$parameterName][$formulaName][$i]['value'] = $formulaValue['slug'];
-                        $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::SIMPLE->name;
                     } else {
-                        $trimmedName = trim($foundedInputSlug[0] ?? $foundedCalculatedSlug[0], '[]{}');
-                        $parameters[$parameterName][$formulaName][$i]['clean_slug'] = $trimmedName;
-
-                        if (isset($foundedInputSlug[0])) {
-                            $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::INPUT->name;
-                        } else if (isset($foundedCalculatedSlug[0])) {
-                            $parameters[$parameterName][$formulaName][$i]['type'] = FormulaComponentType::CALCULATED->name;
-                        }
+                        $parameters[$parameterName][$formulaName][$i]['clean_slug'] = $formulaType->getCleanSlug($formulaValue['slug']);
                     }
                 }
             }
