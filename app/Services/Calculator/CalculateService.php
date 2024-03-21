@@ -170,7 +170,7 @@ class CalculateService
         $this->context = 'Вычисление отдельно взятого компонента. Попробуйте проверить корректность формул.';
         $result = eval("return $formula;");
 
-        return is_float($result) ? round($result, 2) : $result;
+        return $result;
     }
 
     /**

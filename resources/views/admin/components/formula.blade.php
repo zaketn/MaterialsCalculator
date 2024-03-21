@@ -63,6 +63,21 @@
                         value="pow">
                     Квадрат
                 </button>
+                <button @click.prevent="showOperationInput('sin', 'Ввод переключен в режим вычисления синуса.')"
+                        class="btn"
+                        value="sin">
+                    Синус
+                </button>
+                <button @click.prevent="showOperationInput('cos', 'Ввод переключен в режим вычисления косинуса.')"
+                        class="btn"
+                        value="cos">
+                    Косинус
+                </button>
+                <button @click.prevent="showOperationInput('tan', 'Ввод переключен в режим вычисления тангенса.')"
+                        class="btn"
+                        value="tan">
+                    Тангенс
+                </button>
 
                 <template x-for="(inputValue, index) of operationInputs" x-if="operationInputs.length > 0" :key="index" x-ref="operationBox" class="hidden">
                     <template x-if="inputValue">
@@ -265,31 +280,67 @@
             },
 
             saveOperationInput() {
-                if(this.operationInputType === 'sqrt') {
-                    this.operationInputs.unshift({
-                        slug: '(',
-                        inner: '('
-                    })
+                switch (this.operationInputType) {
+                    case 'sqrt':
+                        this.operationInputs.unshift({
+                            slug: '(',
+                            inner: '('
+                        })
 
-                    this.operationInputs.unshift({
-                        slug: 'sqrt',
-                        inner: '√'
-                    })
+                        this.operationInputs.unshift({
+                            slug: 'sqrt',
+                            inner: '√'
+                        })
 
-                    this.operationInputs.push({
-                        slug: ')',
-                        inner: ')'
-                    })
-                } else if(this.operationInputType === 'pow') {
-                    this.operationInputs.unshift({
-                        slug: 'pow(',
-                        inner: '('
-                    })
+                        this.operationInputs.push({
+                            slug: ')',
+                            inner: ')'
+                        })
+                        break;
+                    case 'pow':
+                        this.operationInputs.unshift({
+                            slug: 'pow(',
+                            inner: '('
+                        })
 
-                    this.operationInputs.push({
-                        slug: ', 2)',
-                        inner: ')²'
-                    })
+                        this.operationInputs.push({
+                            slug: ', 2)',
+                            inner: ')²'
+                        })
+                        break;
+                    case 'sin':
+                        this.operationInputs.unshift({
+                            slug: 'sin(',
+                            inner: 'sin('
+                        })
+
+                        this.operationInputs.push({
+                            slug: ')',
+                            inner: ')'
+                        })
+                        break;
+                    case 'cos':
+                        this.operationInputs.unshift({
+                            slug: 'cos(',
+                            inner: 'cos('
+                        })
+
+                        this.operationInputs.push({
+                            slug: ')',
+                            inner: ')'
+                        })
+                        break;
+                    case 'tan':
+                        this.operationInputs.unshift({
+                            slug: 'tan(',
+                            inner: 'tan('
+                        })
+
+                        this.operationInputs.push({
+                            slug: ')',
+                            inner: ')'
+                        })
+                        break;
                 }
 
                 this.inputs = this.inputs.concat(this.operationInputs)
