@@ -50,6 +50,8 @@ class Variation extends Model
 
     public function characteristics() : BelongsToMany
     {
-        return $this->belongsToMany(Characteristic::class)->withPivot('group_order');
+        return $this->belongsToMany(Characteristic::class)
+            ->withPivot('group_order')
+            ->using(CharacteristicVariation::class);
     }
 }

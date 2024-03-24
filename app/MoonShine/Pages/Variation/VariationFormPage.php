@@ -40,7 +40,7 @@ class VariationFormPage extends FormPage
 
         $relatedProductId = request()->get('relatedProductId');
         $this->relatedProduct = !empty($relatedProductId)
-            ? Product::query()->find((int)$relatedProductId)->with('characteristics')
+            ? Product::query()->with('characteristics')->firstWhere('id', (int)$relatedProductId)
             : null;
     }
 
@@ -84,6 +84,7 @@ class VariationFormPage extends FormPage
                         'characteristics',
                         resource: new CharacteristicResource()
                     )
+                        ->columnLabel('Характеристика')
                         ->valuesQuery(
                             fn(Builder $query) => $query
                                 ->where('product_id', $this->getResource()->getItem()->product->id ?? $this->relatedProduct->id)

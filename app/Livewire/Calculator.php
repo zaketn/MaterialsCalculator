@@ -2,39 +2,30 @@
 
 namespace App\Livewire;
 
-use App\Actions\Calculator\AddCleanSlugAction;
 use App\Actions\Calculator\GetInputFormulaComponentsAction;
 use App\Actions\Calculator\GetInputsFromCharacteristicsAction;
 use App\Models\Product;
-use App\Models\Variation;
 use App\Services\Bitrix24\SendToBitrixService;
-use App\Services\Calculator\CalculateService;
 use App\Services\Calculator\CalculatorErrorService;
+use App\Services\Catalog\CatalogService;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\Computed;
-use Livewire\Component;
 use ReflectionClass;
 
-class Calculator extends Component
+class Calculator extends CalculatableComponent
 {
     public Collection $products;
     public Collection $variations;
-    public Collection $components;
-    public \Illuminate\Support\Collection $parameters;
 
     public int $selectedProductId;
     public Model $selectedProduct;
 
     public int $selectedVariationId;
-    public Model $selectedVariation;
-
-    public array $userInputs;
-    public array $formulas;
-    private array $calculated;
 
     public ?string $bitrixDealId;
     public array $bitrixSendStatus;
+    public string $nameForCatalog;
 
     public function __construct()
     {
@@ -48,13 +39,13 @@ class Calculator extends Component
     }
 
     #[Computed]
-    public function error() : ?string
+    public function error(): ?string
     {
         return CalculatorErrorService::get();
     }
 
     #[Computed]
-    public function calculated() : array
+    public function calculated(): array
     {
         return $this->calculated ?? [];
     }
@@ -88,8 +79,7 @@ class Calculator extends Component
         $this->printInputs();
     }
 
-    public function calculate(): void
-    {
+    public function calculate(): void {
         $this->unsetFields([
             'products',
             'selectedProduct',
@@ -100,22 +90,8 @@ class Calculator extends Component
             'userInputs',
             'formulas'
         ]);
-        $this->calculated = [];
 
-        foreach ($this->formulas as $formulaName => $formula) {
-            if($formulaName === \App\Models\Component::SUMMARY_COMPONENT_NAME) continue;
-
-            $calculateService = new CalculateService($this->userInputs, $formula);
-
-            $this->calculated[$formulaName] = $calculateService->calculate();
-        }
-
-        $calculateService = new CalculateService(
-            $this->userInputs,
-            $this->formulas[\App\Models\Component::SUMMARY_COMPONENT_NAME]
-        );
-
-        $this->calculated[\App\Models\Component::SUMMARY_COMPONENT_NAME] = $calculateService->calculateSummary($this->calculated);
+        parent::calculate();
     }
 
     /**
@@ -130,7 +106,45 @@ class Calculator extends Component
         $this->unsetFields(['products']);
     }
 
-    public function sendToBitrix() : void
+    public function saveCalculations(): void
+    {
+        $this->bitrixSendStatus = [];
+
+        if(empty($this->nameForCatalog)) {
+            $this->bitrixSendStatus[] = [
+                'class' => 'text-red-600',
+                'text' => 'Вы должны заполнить поле с названием.'
+            ];
+
+            return;
+        }
+
+        $isRecordAdded = CatalogService::addRecord(
+            $this->nameForCatalog,
+            $this->selectedProduct->id,
+            $this->selectedVariation->id,
+            $this->userInputs
+        );
+
+        if($isRecordAdded === true) {
+            $this->bitrixSendStatus[] = [
+                'class' => 'text-green-500',
+                'text' => 'Товар сохранён в каталог.'
+            ];
+        } else {
+            $this->bitrixSendStatus[] = [
+                'class' => 'text-red-600',
+                'text' => 'Ошибка при сохранении товара.'
+            ];
+        }
+
+        if (app()->isProduction()) {
+            $this->sendToBitrix();
+        }
+    }
+
+
+    private function sendToBitrix(): void
     {
         $bitrixService = new SendToBitrixService(
             $this->bitrixDealId,
@@ -139,56 +153,41 @@ class Calculator extends Component
             $this->calculated,
         );
 
-        unset($this->bitrixSendStatus);
-        $errorStatus = [
+        $errorStatus[] = [
             'class' => 'text-red-600',
             'text' => 'Ошибка при отправке в bitrix.'
         ];
 
-        if(!$bitrixService->checkIfProductExists()){
+        if (!$bitrixService->checkIfProductExists()) {
             $isProductCreated = $bitrixService->createProduct();
-            if(!$isProductCreated){
+            if (!$isProductCreated) {
                 $this->bitrixSendStatus = $errorStatus;
                 return;
             }
         }
 
         $isProductAttached = $bitrixService->attachProductToDeal();
-        if(!$isProductAttached){
+        if (!$isProductAttached) {
             $this->bitrixSendStatus = $errorStatus;
             return;
         }
+
+        $this->bitrixSendStatus[] = [
+            'class' => 'text-green-500',
+            'text' => 'Товар прикреплён к сделке.'
+        ];
 
         $isCommentAttached = $bitrixService->createComment();
 
-        if(!$isCommentAttached) {
+        if (!$isCommentAttached) {
             $this->bitrixSendStatus = $errorStatus;
             return;
         }
 
-        $this->bitrixSendStatus = [
+        $this->bitrixSendStatus[] = [
             'class' => 'text-green-500',
-            'text' => 'Успех! Товар прикреплен к сделке, оставлен комментарий с подробностями.'
+            'text' => 'Оставлен комментарий с подробностями.'
         ];
-    }
-
-    private function loadVariationDependencies(int $selectedVariationId): void
-    {
-        $this->selectedVariation = Variation::query()
-            ->with('components.parameters')
-            ->firstWhere('id', $selectedVariationId);
-
-        $this->components = $this->selectedVariation
-            ->components;
-
-        $this->parameters = collect();
-
-        foreach ($this->components as $component) {
-            $this->parameters->put(
-                $component->name,
-                $component->parameters->pluck('formula', 'name')
-            );
-        }
     }
 
     private function printInputs(): void
@@ -208,16 +207,7 @@ class Calculator extends Component
         $this->userInputs = $characteristicsToDisplay;
     }
 
-    private function addCleanSlugToInputFormulaComponents(): void
-    {
-        $addCleanSlugAction = new AddCleanSlugAction();
-
-        $separatedFormulaComponents = $addCleanSlugAction($this->parameters);
-
-        $this->formulas = $separatedFormulaComponents;
-    }
-
-    private function unsetFields(array $exceptions) : void
+    private function unsetFields(array $exceptions): void
     {
         CalculatorErrorService::remove();
 

@@ -52,15 +52,16 @@
                                            class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">
                                         {{ $userInput['name'] }}
                                     </label>
+{{--                                    <input type="hidden" name="userInputs.{{ $i }}.[type]" value="{{ $userInput['type'] }}">--}}
                                     <select
-                                        wire:model="userInputs.{{ $i }}.value"
+                                        wire:model="userInputs.{{ $i }}.modelId"
                                         id="{{ $userInput['slug'] }}"
                                         name="{{ $userInput['slug'] }}"
                                         class="mb-3 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
                                         <option selected></option>
                                         @foreach($userInput['type']::all() as $value)
                                             <option wire:key="{{ $value->id }}"
-                                                    value="{{ $value->price }}">{{ $value->name }}</option>
+                                                    value="{{ $value->id }}">{{ $value->name }}</option>
                                         @endforeach
                                     </select>
                                 @else
@@ -83,7 +84,7 @@
                         @endforeach
                         <button type="submit"
                                 class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
-                            Сохранить
+                            Расчитать
                         </button>
                     </form>
                 @endif
@@ -95,7 +96,7 @@
                     <p class="text-red-500">{{ $this->error }}</p>
                 </div>
             @elseif(!empty($this->calculated))
-                <div class="p-5 rounded dark:text-white">
+                <div class="p-5 rounded text-black dark:text-white">
                     @foreach($this->calculated as $parameterName => $calculatedParameter)
                         @continue($parameterName === \App\Models\Component::SUMMARY_COMPONENT_NAME)
 
@@ -116,17 +117,25 @@
                         </div>
                     @endif
 
-                    <div class="flex gap-2 items-center">
-                        @if($bitrixDealId)
-                            <button wire:click="sendToBitrix" type="text"
-                                    class="mt-4 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+                    <div class="flex flex-col gap-2 justify-center mt-6">
+                        @if($bitrixDealId || app()->isLocal())
+                            <div>
+                                <label for="first_name" class="block mb-2 font-medium text-gray-900 dark:text-white">Введите название для каталога</label>
+                                <input wire:model="nameForCatalog" type="text" id="first_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Труба (базовая)" required />
+                            </div>
+                            <button wire:click="saveCalculations" type="button"
+                                    class="mt-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
                                 Отправить в Bitrix
                             </button>
                         @endif
 
-                        @if(!empty($bitrixSendStatus))
-                            <p class="{{ $bitrixSendStatus['class'] }}">{{ $bitrixSendStatus['text'] }}</p>
-                        @endif
+                            @if(!empty($bitrixSendStatus))
+                                <div>
+                                    @foreach($bitrixSendStatus as $status)
+                                        <p class="{{ $status['class'] }} font-bold">{{ $status['text'] }}</p>
+                                    @endforeach
+                                </div>
+                            @endif
                     </div>
                 </div>
             @endif
