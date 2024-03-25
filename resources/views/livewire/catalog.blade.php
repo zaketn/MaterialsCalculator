@@ -47,7 +47,7 @@
                                         </div>
                                         <div class="px-3 py-2">
                                             @foreach($catalog->characteristics as $characteristic)
-                                                <p>{{ $characteristic->name }}: {{ $characteristic->pivot->value }}</p>
+                                                <p>{{ $characteristic->name }}: {{ class_exists($characteristic->type) ? $characteristic->type::firstWhere('id', $characteristic->pivot->value)->name : $characteristic->pivot->value }}</p>
                                             @endforeach
                                         </div>
                                         <div data-popper-arrow></div>

@@ -105,7 +105,7 @@
                             @foreach($calculatedParameter as $formulaName => $formulaValue)
                                 <div wire:key="{{ $formulaName }}">
                                     <p>{{ $formulaName }}
-                                        : {{ is_array($formulaValue) ? 'Формула не задана.' : $formulaValue }}</p>
+                                        : {{ is_array($formulaValue) ? 'Формула не задана.' : round($formulaValue, 2) }}</p>
                                 </div>
                             @endforeach
                         </div>

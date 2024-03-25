@@ -88,7 +88,8 @@ class Calculator extends CalculatableComponent
             'selectedVariationId',
             'variations',
             'userInputs',
-            'formulas'
+            'formulas',
+            'bitrixDealId'
         ]);
 
         parent::calculate();
